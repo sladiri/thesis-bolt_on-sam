@@ -14,7 +14,7 @@ const index = html =>
   <!--<link rel="stylesheet" type="text/css" href="dist/main.css">-->
 </head>
 <body>
-  <div id="root">${html || ''}</div>
+  <div id="root">${html || '<h2>no view</h2>'}</div>
   <script>
     Promise.all([
       System.import('bolt_on-sam'),
@@ -47,7 +47,7 @@ export function onRender (input) {
 export function connect () {
   return {
     names: ['render'],
-    handlers: [onRender],
+    handler: onRender,
     targets: [],
   }
 }
