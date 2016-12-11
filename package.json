@@ -1,0 +1,141 @@
+{
+  "name": "bolt_on-sam",
+  "version": "0.0.1",
+  "description": "Prototype about Bolt-on protocol and SAM pattern.",
+  "main": "index.js",
+  "scripts": {
+    "bak:glob": "mkdirp dist && globstar --node -- lnk \"dist-shared/*\" dist/shared",
+    "db:init": "add-cors-to-couchdb",
+    "rabbit": "sh ./rabbit-init.sh",
+    "rabbit:clean": "sh ./rabbit-clean.sh",
+    "jspm": "jspm",
+    "env": "env",
+    "clean:server": "rimraf dist",
+    "clean:client": "rimraf public/dist",
+    "clean": "npm run clean:server && npm run clean:client",
+    "build:shared": "mkdirp dist/shared && babel src/shared -d dist/shared --source-maps inline",
+    "build:server": "mkdirp dist/server && babel src/server -d dist/server --source-maps inline",
+    "build": "npm run build:shared && npm run build:server",
+    "debug:server": "babel-node --debug src/server/index.js",
+    "start:dev": "babel-node src/server/index.js",
+    "start": "node dist/server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Slađan Ristić",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-plugin-syntax-trailing-function-commas": "^6.20.0",
+    "babel-plugin-transform-async-generator-functions": "^6.17.0",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-plugin-transform-do-expressions": "^6.8.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
+    "babel-plugin-transform-function-bind": "^6.8.0",
+    "babel-plugin-transform-object-rest-spread": "^6.20.2",
+    "env": "0.0.2",
+    "faucet": "0.0.1",
+    "garnish": "^5.2.0",
+    "jspm": "^0.17.0-beta.32",
+    "jsverify": "^0.7.4",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.5.4",
+    "stylelint-config-standard": "^15.0.0",
+    "tape": "^4.6.3",
+    "tape-run": "^2.1.4",
+    "watch": "^1.0.1"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.20.0",
+    "bluebird": "^3.4.6",
+    "flyd": "^0.2.2",
+    "koa": "^2.0.0",
+    "koa-favicon": "^2.0.0",
+    "koa-json": "^2.0.2",
+    "koa-mount": "^2.0.0",
+    "koa-send": "^3.2.0",
+    "ramda": "^0.22.1",
+    "spdy": "^3.4.4"
+  },
+  "jspm": {
+    "name": "bolt_on-sam",
+    "main": "client/index.js",
+    "directories": {
+      "baseURL": "public"
+    },
+    "dependencies": {
+      "babel-plugin-syntax-trailing-function-commas": "npm:babel-plugin-syntax-trailing-function-commas@^6.20.0",
+      "babel-plugin-transform-async-generator-functions": "npm:babel-plugin-transform-async-generator-functions@^6.17.0",
+      "babel-plugin-transform-async-to-generator": "npm:babel-plugin-transform-async-to-generator@^6.16.0",
+      "babel-plugin-transform-do-expressions": "npm:babel-plugin-transform-do-expressions@^6.8.0",
+      "babel-plugin-transform-es2015-modules-commonjs": "npm:babel-plugin-transform-es2015-modules-commonjs@^6.18.0",
+      "babel-plugin-transform-function-bind": "npm:babel-plugin-transform-function-bind@^6.8.0",
+      "babel-plugin-transform-object-rest-spread": "npm:babel-plugin-transform-object-rest-spread@^6.20.2",
+      "bluebird": "npm:bluebird@^3.4.6",
+      "core-js": "npm:core-js@^2.4.1",
+      "ramda": "npm:ramda@^0.22.1"
+    },
+    "devDependencies": {
+      "plugin-babel": "npm:systemjs-plugin-babel@^0.0.17"
+    },
+    "peerDependencies": {
+      "assert": "npm:jspm-nodelibs-assert@^0.2.0",
+      "buffer": "npm:jspm-nodelibs-buffer@^0.2.0",
+      "constants": "npm:jspm-nodelibs-constants@^0.2.0",
+      "crypto": "npm:jspm-nodelibs-crypto@^0.2.0",
+      "events": "npm:jspm-nodelibs-events@^0.2.0",
+      "fs": "npm:jspm-nodelibs-fs@^0.2.0",
+      "os": "npm:jspm-nodelibs-os@^0.2.0",
+      "path": "npm:jspm-nodelibs-path@^0.2.0",
+      "process": "npm:jspm-nodelibs-process@^0.2.0",
+      "stream": "npm:jspm-nodelibs-stream@^0.2.0",
+      "string_decoder": "npm:jspm-nodelibs-string_decoder@^0.2.0",
+      "util": "npm:jspm-nodelibs-util@^0.2.0",
+      "vm": "npm:jspm-nodelibs-vm@^0.2.0"
+    },
+    "overrides": {
+      "npm:bluebird@3.4.6": {
+        "meta": {
+          "js/browser/bluebird.js": {
+            "format": "global"
+          },
+          "js/browser/bluebird.min.js": {
+            "format": "global"
+          }
+        }
+      },
+      "npm:debug@2.3.3": {
+        "main": "browser.js",
+        "jspmNodeConversion": false,
+        "format": "cjs",
+        "map": {
+          "./browser.js": {
+            "node": "./node.js"
+          },
+          "./node.js": {
+            "browser": "./browser.js"
+          },
+          "fs": "@node/fs",
+          "net": "@node/net",
+          "tty": "@node/tty",
+          "util": "@node/util"
+        }
+      },
+      "npm:inherits@2.0.3": {
+        "ignore": [
+          "test.js"
+        ]
+      },
+      "npm:lodash@4.17.2": {
+        "map": {
+          "buffer": "@empty",
+          "process": "@empty"
+        }
+      },
+      "npm:ms@0.7.2": {
+        "jspmNodeConversion": false,
+        "format": "cjs"
+      }
+    }
+  }
+}
