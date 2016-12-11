@@ -45,6 +45,7 @@ SystemJS.config({
     "npm:*.json"
   ],
   map: {
+    "ajv": "npm:ajv@5.0.0-beta.1",
     "assert": "npm:jspm-nodelibs-assert@0.2.0",
     "babel-plugin-syntax-trailing-function-commas": "npm:babel-plugin-syntax-trailing-function-commas@6.20.0",
     "babel-plugin-transform-async-generator-functions": "npm:babel-plugin-transform-async-generator-functions@6.17.0",
@@ -70,6 +71,7 @@ SystemJS.config({
     "ramda": "npm:ramda@0.22.1",
     "stream": "npm:jspm-nodelibs-stream@0.2.0",
     "string_decoder": "npm:jspm-nodelibs-string_decoder@0.2.0",
+    "url": "npm:jspm-nodelibs-url@0.2.0",
     "util": "npm:jspm-nodelibs-util@0.2.1",
     "vm": "npm:jspm-nodelibs-vm@0.2.0"
   },
@@ -447,6 +449,28 @@ SystemJS.config({
     "npm:flyd@0.2.2": {
       "map": {
         "ramda": "npm:ramda@0.19.1"
+      }
+    },
+    "npm:ajv@5.0.0-beta.1": {
+      "map": {
+        "co": "npm:co@4.6.0",
+        "json-stable-stringify": "npm:json-stable-stringify@1.0.1"
+      }
+    },
+    "npm:json-stable-stringify@1.0.1": {
+      "map": {
+        "jsonify": "npm:jsonify@0.0.0"
+      }
+    },
+    "npm:jspm-nodelibs-url@0.2.0": {
+      "map": {
+        "url-browserify": "npm:url@0.11.0"
+      }
+    },
+    "npm:url@0.11.0": {
+      "map": {
+        "punycode": "npm:punycode@1.3.2",
+        "querystring": "npm:querystring@0.2.0"
       }
     }
   }

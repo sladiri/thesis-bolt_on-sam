@@ -16,10 +16,6 @@ export async function pony (ctx) {
   ctx.body = JSON.stringify(await ponyFoo(200), null, '  ')
 }
 
-export async function iso (ctx) {
-  ctx.body = 'iso'
-}
-
 const close = (socket, stream) => what => msg => {
   stream.end(true)
   socket.removeListener(what, close)
@@ -58,8 +54,4 @@ export async function sse (ctx) {
 
   ctx.type = 'text/event-stream'
   ctx.body = stream
-}
-
-export async function push (ctx) {
-  ctx.body = 'push'
 }
