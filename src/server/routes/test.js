@@ -10,7 +10,7 @@ function sseData (data) {
 }
 
 export async function pony (ctx) {
-  ctx.body = await ponyFoo(200)
+  ctx.body = JSON.stringify(await ponyFoo(200), null, '  ')
 }
 
 export async function iso (ctx) {
