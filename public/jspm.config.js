@@ -18,6 +18,7 @@ SystemJS.config({
       "format": "esm",
       "meta": {
         "*.js": {
+          "loader": "plugin-babel",
           "babelOptions": {
             "es2015": false,
             "stage3": false,
@@ -57,6 +58,7 @@ SystemJS.config({
     "constants": "npm:jspm-nodelibs-constants@0.2.0",
     "core-js": "npm:core-js@2.4.1",
     "crypto": "npm:jspm-nodelibs-crypto@0.2.0",
+    "debug": "npm:debug@2.3.3",
     "events": "npm:jspm-nodelibs-events@0.2.0",
     "flyd": "npm:flyd@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.0",
