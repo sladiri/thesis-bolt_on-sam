@@ -58,7 +58,10 @@ SystemJS.config({
     "core-js": "npm:core-js@2.4.1",
     "crypto": "npm:jspm-nodelibs-crypto@0.2.0",
     "events": "npm:jspm-nodelibs-events@0.2.0",
+    "flyd": "npm:flyd@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.0",
+    "hyperscript": "npm:hyperscript@2.0.2",
+    "morphdom": "npm:morphdom@2.2.1",
     "os": "npm:jspm-nodelibs-os@0.2.0",
     "path": "npm:jspm-nodelibs-path@0.2.1",
     "process": "npm:jspm-nodelibs-process@0.2.0",
@@ -419,6 +422,29 @@ SystemJS.config({
     "npm:hash.js@1.0.3": {
       "map": {
         "inherits": "npm:inherits@2.0.3"
+      }
+    },
+    "npm:hyperscript@2.0.2": {
+      "map": {
+        "class-list": "npm:class-list@0.1.1",
+        "html-element": "npm:html-element@2.1.1",
+        "browser-split": "npm:browser-split@0.0.0",
+        "node-html-element": "npm:html-element@2.1.1"
+      }
+    },
+    "npm:html-element@2.1.1": {
+      "map": {
+        "class-list": "npm:class-list@0.1.1"
+      }
+    },
+    "npm:class-list@0.1.1": {
+      "map": {
+        "indexof": "npm:indexof@0.0.1"
+      }
+    },
+    "npm:flyd@0.2.2": {
+      "map": {
+        "ramda": "npm:ramda@0.19.1"
       }
     }
   }

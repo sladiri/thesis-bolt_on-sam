@@ -1,7 +1,12 @@
 /* global EventSource */
 
 import {logConsole} from '../shared/logger'
+import morphdom from 'morphdom'
+import h from 'hyperscript'
+import {equal} from 'assert'
+import {isNil} from 'ramda'
 import {pony} from '../shared/pony'
+
 const log = logConsole('client')
 const sseLog = logConsole('client', 'SSE')
 
@@ -10,15 +15,18 @@ async function testFoo (ctx) {
 }
 testFoo()
 
-async function test (ctx) {
-  const foo = `foo: ${JSON.stringify(await pony(200))}`
-  console.log(foo)
+function renderDom (domNode) {
+  equal(isNil(domNode), false)
+  document.body.children.length === 0
+    ? document.body.appendChild(domNode)
+    : morphdom(document.body.firstChild, domNode)
 }
-test()
 
-const hello = 'hello client'
-console.log(hello)
-document.body.innerHTML = hello
+const hello = (value) => {
+  renderDom(h('p.count', `Hello Sladi - ${value}`))
+}
+
+hello()
 
 const source = new EventSource('/test/sse')
 source.addEventListener('message', function (e) {

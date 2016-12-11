@@ -76,6 +76,9 @@
       "bluebird": "npm:bluebird@^3.4.6",
       "core-js": "npm:core-js@^2.4.1",
       "debug": "npm:debug@^2.3.3",
+      "flyd": "npm:flyd@^0.2.2",
+      "hyperscript": "npm:hyperscript@^2.0.2",
+      "morphdom": "npm:morphdom@^2.2.1",
       "ramda": "npm:ramda@^0.22.1"
     },
     "devDependencies": {
