@@ -3,7 +3,7 @@ import errorHandler from './error_handler'
 import responseLogger from './response_logger'
 import serveFiles from './serve_files'
 import serveFavicon from './serve_favicon'
-import serveIndex from './serve_index'
+import renderIndex from './render_index'
 import prettyJSON from 'koa-json'
 import mount from 'koa-mount'
 import * as test from './routes/test'
@@ -23,7 +23,7 @@ export default function createApp () {
     app.use(mount(`/test/${key}`, test[key]))
   })
 
-  app.use(mount(serveIndex))
+  app.use(mount(renderIndex))
 
   return app
 }

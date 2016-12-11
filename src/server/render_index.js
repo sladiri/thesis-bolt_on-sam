@@ -1,3 +1,8 @@
+import {logConsole} from '../shared/logger'
+import validate from '../shared/json_schema'
+
+const log = logConsole('render_dom')
+
 const index = html =>
 `
 <!doctype html>
@@ -19,7 +24,23 @@ const index = html =>
 
 let view = index()
 
+export default async function renderIndex (ctx) {
+  ctx.body = view
+}
+
+const validInput = validate({
+  properties: {
+    node: {
+      properties: {
+        outerHTML: {type: 'string'},
+      },
+    },
+  },
+}, log)
+
 export function onRender (input) {
+  if (!validInput(input)) { return }
+
   view = index(input.node.outerHTML)
 }
 
@@ -29,8 +50,4 @@ export function connect () {
     handlers: [onRender],
     targets: [],
   }
-}
-
-export default async function serveIndex (ctx) {
-  ctx.body = view
 }
