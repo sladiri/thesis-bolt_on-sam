@@ -1,5 +1,5 @@
-import {logConsole} from '../../shared/logger'
-import {foo, pony as ponyFoo} from '../../shared/pony'
+import {logConsole} from '../../../shared/boundary/logger'
+import {foo, pony as ponyFoo} from '../../../shared/control/pony'
 import {PassThrough} from 'stream'
 import {pipe} from 'ramda'
 import flyd from 'flyd'
@@ -9,7 +9,7 @@ import switchlatest from 'flyd/module/switchlatest'
 const socketLog = logConsole('test', 'socket')
 
 function sseData (data) {
-  return `data: ${data}\n\n`
+  return `data: ${JSON.stringify(data)}\n\n`
 }
 
 export async function pony (ctx) {
@@ -31,7 +31,10 @@ const handleSseSocket = (socket, stream) => {
 
 async function getPony (timeout, stream, id) {
   for await (const data of foo(timeout)) {
-    stream(`${id} :: ${data}`)
+    stream({
+      targets: ['render'],
+      data: {node: `${id} :: ${data}`},
+    })
   }
 }
 

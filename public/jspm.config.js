@@ -14,7 +14,7 @@ SystemJS.config({
   transpiler: "plugin-babel",
   packages: {
     "bolt_on-sam": {
-      "main": "client/index.js",
+      "main": "client/boundary/index.js",
       "format": "esm",
       "meta": {
         "*.js": {
@@ -67,6 +67,7 @@ SystemJS.config({
     "morphdom": "npm:morphdom@2.2.1",
     "os": "npm:jspm-nodelibs-os@0.2.0",
     "path": "npm:jspm-nodelibs-path@0.2.1",
+    "postal": "npm:postal@2.0.5",
     "process": "npm:jspm-nodelibs-process@0.2.0",
     "ramda": "npm:ramda@0.22.1",
     "stream": "npm:jspm-nodelibs-stream@0.2.0",
@@ -471,6 +472,11 @@ SystemJS.config({
       "map": {
         "punycode": "npm:punycode@1.3.2",
         "querystring": "npm:querystring@0.2.0"
+      }
+    },
+    "npm:postal@2.0.5": {
+      "map": {
+        "lodash": "npm:lodash@4.17.2"
       }
     }
   }
