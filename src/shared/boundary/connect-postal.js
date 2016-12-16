@@ -43,7 +43,7 @@ export function getSource ({topics}) {
   return {subs, source: stream}
 }
 
-export function setSink ({stream, targets = []}) {
+export function setSink ({stream, targets}) {
   stream = filter(hasData, stream)
   flyd.on(publishToBus(targets), stream)
   return stream
