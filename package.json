@@ -6,9 +6,6 @@
   "scripts": {
     "db:init": "add-cors-to-couchdb",
     "link-src": "lnk src public",
-    "predebug:server": "npm run link-src",
-    "prestart:dev": "npm run link-src",
-    "prestart": "npm run link-src",
     "env": "env",
     "clean:server": "rimraf dist",
     "clean:client": "rimraf public/dist",
