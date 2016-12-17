@@ -1,6 +1,7 @@
 import {logConsole} from './logger'
 import validateAndLog from './json-schema'
 import h from 'hyperscript'
+import {range} from 'ramda'
 // import * as actions from './actions'
 
 const log = logConsole('state-state-representation')
@@ -12,6 +13,18 @@ export const validate = validateAndLog({
     },
   },
 }, log)
+
+const numbers = range(1, 10).map(x => Math.random())
+function row (x, i) {
+  if (Math.random() < 0.5) {
+    list[i] = Math.random()
+  }
+  return h('p.row', list[i])
+}
+function list () {
+  const children = numbers.map(row)
+  return h('div.list', ...children)
+}
 
 // const increment = value => {
 //   getSignal().then(signal => {
@@ -27,36 +40,34 @@ function pCount ({field}) {
 
 function button ({field, disabled}) {
   return h('button', {
-    onclick: increment,
+    onclick: () => increment(field),
     disabled,
-  }, `Increment Button ${field}`)
+  }, 'Increment Button')
 }
 
-function root ({children}) {
-  return h('div#root', ...children)
+function root (children) {
+  return h('div#state-representation', ...children)
 }
 
 const views = {
   initial (model) {
-    return root({
-      children: [
+    return root([
         pCount(model),
         h('br'),
         button(model),
-      ],
-    })
+      h('br'),
+      list(),
+    ])
   },
 
   danger (model) {
-    return root({
-      children: [
+    return root([
         pCount(model),
         h('br'),
         button({...model, disabled: true}),
         h('br'),
         h('span.danger', 'DANGER'),
-      ],
-    })
+    ])
   },
 }
 
