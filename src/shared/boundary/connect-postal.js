@@ -26,7 +26,7 @@ const subscribe = stream => function subscribeHandler (topic) {
     callback: busToStream(stream),
   })
 }
-const publishToBus = targets => function publishToBusHandler (data) {
+const publish = targets => function publishHandler (data) {
   targets.forEach(topic => {
     publishLog(targets, JSON.stringify(data))
     postal.publish({channel, topic, data})
@@ -45,7 +45,7 @@ export function getSource ({topics}) {
 
 export function setSink ({stream, targets}) {
   stream = filter(hasData, stream)
-  flyd.on(publishToBus(targets), stream)
+  flyd.on(publish(targets), stream)
   return stream
 }
 
