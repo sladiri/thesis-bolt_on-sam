@@ -14,12 +14,12 @@ function hasData (data) { return data !== undefined }
 const busToStream = stream => function busToStreamHandler (data, envelope) {
   stream({data, envelope})
 }
-const logBusToStream = topics => function logBusToStreamHandler (message) {
-  subscribeLog(topics, JSON.stringify({message}))
+const logBusToStream = topic => function logBusToStreamHandler (message) {
+  subscribeLog(topic, JSON.stringify({message}))
 }
-const subscribe = (topics, stream) => function subscribeHandler (topic) {
-  subscribeLog('set source to topics', topics)
-  flyd.on(logBusToStream(topics), stream)
+const subscribe = stream => function subscribeHandler (topic) {
+  subscribeLog('set source to topics', topic)
+  flyd.on(logBusToStream(topic), stream)
   return postal.subscribe({
     channel,
     topic,
@@ -39,7 +39,7 @@ const unsubscribe = (topics, targets, subs) => function unsubscribeHandler (end)
 
 export function getSource ({topics}) {
   const stream = filter(hasData, flyd.stream())
-  const subs = topics.map(subscribe(topics, stream))
+  const subs = topics.map(subscribe(stream))
   return {subs, source: stream}
 }
 
