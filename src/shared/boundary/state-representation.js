@@ -32,7 +32,7 @@ function list () {
 //   })
 // }
 
-function increment () { console.log(`Fake click ${new Date()}`) }
+function increment (field) { console.log(`Fake click | ${field} | ${new Date()}`) }
 
 function pCount ({field}) {
   return h('p.count', field)
@@ -52,9 +52,9 @@ function root (children) {
 const views = {
   initial (model) {
     return root([
-        pCount(model),
-        h('br'),
-        button(model),
+      pCount(model),
+      h('br'),
+      button(model),
       h('br'),
       list(),
     ])
@@ -62,11 +62,11 @@ const views = {
 
   danger (model) {
     return root([
-        pCount(model),
-        h('br'),
-        button({...model, disabled: true}),
-        h('br'),
-        h('span.danger', 'DANGER'),
+      pCount(model),
+      h('br'),
+      button({...model, disabled: true}),
+      h('br'),
+      h('span.danger', 'DANGER'),
     ])
   },
 }
