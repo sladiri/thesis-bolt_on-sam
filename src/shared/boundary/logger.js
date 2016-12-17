@@ -2,11 +2,8 @@ import logger from 'debug'
 
 const appPrefix = ['[T-BO]']
 const appLog = (prefixes) => {
-  const date = (new Date()).toUTCString()
   const prefix = appPrefix.concat(prefixes).join(':')
-  return typeof window === 'undefined' // JSPM has error when localstorage.debug is set for 'debug'.
-    ? logger(prefix)
-    : message => { console.log(`${date} ${prefix} ${message}`) }
+  return logger(prefix)
 }
 
 export function format (messages) {
