@@ -12,6 +12,7 @@ function markup (html) {
 <html lang=en>
 <head>
   <meta charset=utf-8><title>Bolt On - SAM!</title>
+  <link rel="icon" href="/public/favicon.ico" />
   <script src="/public/jspm_packages/system.js"></script>
   <script src="/public/jspm.config.js"></script>
   <!--<link rel="stylesheet" type="text/css" href="dist/main.css">-->

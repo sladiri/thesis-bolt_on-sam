@@ -2,6 +2,7 @@
 /node_modules
 /public/jspm_packages
 /public/src
+/public/favicon.ico
 /public/dist
 /dist-shared
 /dist

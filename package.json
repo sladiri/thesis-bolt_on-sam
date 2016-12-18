@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "db:init": "add-cors-to-couchdb",
-    "link-src": "lnk src public",
+    "link:src": "lnk src public",
+    "link:favicon": "lnk public/favicon/foot/favicon.ico public",
     "env": "env",
     "clean:server": "rimraf dist",
     "clean:client": "rimraf public/dist",
@@ -54,7 +55,6 @@
     "inferno-hyperscript": "^2.0.3",
     "inferno-server": "^0.7.27",
     "koa": "^2.0.0",
-    "koa-favicon": "^2.0.0",
     "koa-json": "^2.0.2",
     "koa-mount": "^2.0.0",
     "koa-send": "^3.2.0",

@@ -20,7 +20,6 @@ function createApp () {
   app.use(responseLogger)
 
   app.use(mount('/public', serveFiles('/public')))
-  app.use(serveFavicon)
 
   app.use(prettyJSON())
 
