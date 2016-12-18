@@ -63,8 +63,9 @@ SystemJS.config({
     "events": "npm:jspm-nodelibs-events@0.2.0",
     "flyd": "npm:flyd@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.0",
-    "hyperscript": "npm:hyperscript@2.0.2",
-    "morphdom": "npm:morphdom@2.2.1",
+    "inferno": "npm:inferno@0.7.27",
+    "inferno-dom": "npm:inferno-dom@0.7.27",
+    "inferno-hyperscript": "npm:inferno-hyperscript@2.0.3",
     "os": "npm:jspm-nodelibs-os@0.2.0",
     "path": "npm:jspm-nodelibs-path@0.2.1",
     "postal": "npm:postal@2.0.5",
@@ -429,24 +430,6 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.3"
       }
     },
-    "npm:hyperscript@2.0.2": {
-      "map": {
-        "class-list": "npm:class-list@0.1.1",
-        "html-element": "npm:html-element@2.1.1",
-        "browser-split": "npm:browser-split@0.0.0",
-        "node-html-element": "npm:html-element@2.1.1"
-      }
-    },
-    "npm:html-element@2.1.1": {
-      "map": {
-        "class-list": "npm:class-list@0.1.1"
-      }
-    },
-    "npm:class-list@0.1.1": {
-      "map": {
-        "indexof": "npm:indexof@0.0.1"
-      }
-    },
     "npm:flyd@0.2.2": {
       "map": {
         "ramda": "npm:ramda@0.19.1"
@@ -477,6 +460,54 @@ SystemJS.config({
     "npm:postal@2.0.5": {
       "map": {
         "lodash": "npm:lodash@4.17.2"
+      }
+    },
+    "npm:inferno-hyperscript@2.0.3": {
+      "map": {
+        "inferno": "npm:inferno@0.7.27",
+        "lodash": "npm:lodash@4.17.2",
+        "virtual-dom": "npm:virtual-dom@2.1.1"
+      }
+    },
+    "npm:inferno-dom@0.7.27": {
+      "map": {
+        "inferno": "npm:inferno@0.7.27"
+      }
+    },
+    "npm:virtual-dom@2.1.1": {
+      "map": {
+        "error": "npm:error@4.4.0",
+        "x-is-array": "npm:x-is-array@0.1.0",
+        "browser-split": "npm:browser-split@0.0.1",
+        "global": "npm:global@4.3.1",
+        "ev-store": "npm:ev-store@7.0.0",
+        "next-tick": "npm:next-tick@0.2.2",
+        "is-object": "npm:is-object@1.0.1",
+        "x-is-string": "npm:x-is-string@0.1.0"
+      }
+    },
+    "npm:error@4.4.0": {
+      "map": {
+        "camelize": "npm:camelize@1.0.0",
+        "string-template": "npm:string-template@0.2.1",
+        "xtend": "npm:xtend@4.0.1"
+      }
+    },
+    "npm:global@4.3.1": {
+      "map": {
+        "min-document": "npm:min-document@2.19.0",
+        "node-min-document": "npm:min-document@2.19.0",
+        "process": "npm:process@0.5.2"
+      }
+    },
+    "npm:ev-store@7.0.0": {
+      "map": {
+        "individual": "npm:individual@3.0.0"
+      }
+    },
+    "npm:min-document@2.19.0": {
+      "map": {
+        "dom-walk": "npm:dom-walk@0.1.1"
       }
     }
   }

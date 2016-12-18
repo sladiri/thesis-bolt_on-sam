@@ -1,11 +1,13 @@
 import {logConsole} from '../../../shared/boundary/logger'
+import {renderToString} from 'inferno-server'
 import flyd from 'flyd'
+import {pipe} from 'ramda'
 import stateRepresentation, {validate} from '../../../shared/boundary/state-representation'
 
 const log = logConsole('render-index')
 
-const markup = html =>
-`
+function markup (html) {
+  return `
 <!doctype html>
 <html lang=en>
 <head>
@@ -26,6 +28,7 @@ const markup = html =>
     ])
   </script>
 `
+}
 
 const index = flyd.stream()
 
@@ -34,8 +37,15 @@ export async function renderIndex (ctx) {
 }
 
 export function onServerStateRepresentation (input) {
-  const view = stateRepresentation({model: input.model})
-  index(markup(view.outerHTML))
+  if (!validate(input)) { return }
+
+  pipe(
+    stateRepresentation,
+    renderToString,
+    markup,
+    index,
+  )({model: input.model})
+
   log('rendered')
 }
 

@@ -1,6 +1,6 @@
 import {logConsole} from './logger'
+import h from 'inferno-hyperscript'
 import validateAndLog from './json-schema'
-import h from 'hyperscript'
 import {range} from 'ramda'
 // import * as actions from './actions'
 
@@ -23,7 +23,7 @@ function row (x, i) {
 }
 function list () {
   const children = numbers.map(row)
-  return h('div.list', ...children)
+  return h('div.list', children)
 }
 
 // const increment = value => {
@@ -46,7 +46,7 @@ function button ({field, disabled}) {
 }
 
 function root (children) {
-  return h('div#state-representation', ...children)
+  return h('div#state-representation', children)
 }
 
 const views = {
