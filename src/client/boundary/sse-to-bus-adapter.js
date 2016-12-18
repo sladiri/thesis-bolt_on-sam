@@ -3,31 +3,37 @@
 import {logConsole} from '../../shared/boundary/logger'
 import {getSink} from '../../shared/boundary/connect-postal'
 
-const log = logConsole('sse')
-const logMessage = (state, event) =>
-  `${state} ${event.target.url} ; readyState = ${event.target.readyState}`
+const logMessage = event =>
+  `${event.target.url} ; readyState = ${event.target.readyState}`
 
 export default url => {
   let source = new EventSource(url)
   let sinks = {}
-  source.addEventListener('message', event => {
+
+  function messageHandler (event) {
     const payload = JSON.parse(event.data)
     const target = payload.envelope.topic
+    sinks = sinks || {}
     const sink = sinks[target] = sinks[target] || getSink({targets: [target]})
     sink(payload.data)
-  })
+  }
 
-  source.addEventListener('open', event => {
-    log(logMessage('open', event))
-  })
+  function openHandler (event) {
+    logConsole('sse', 'open')(logMessage(event))
+    source.removeEventListener('open', openHandler)
+    source.addEventListener('message', messageHandler)
+  }
 
-  source.addEventListener('error', event => {
+  function errorHandler (event) {
+    if (event.readyState === EventSource.CLOSED) {
+      logConsole('sse', 'closed')(logMessage(event))
+    } else {
+      logConsole('sse', 'error')(logMessage(event))
+    }
     source = undefined
     sinks = undefined
-    if (event.readyState === EventSource.CLOSED) {
-      log(logMessage('closed', event))
-    } else {
-      log(logMessage('error', event))
-    }
-  })
+  }
+
+  source.addEventListener('open', openHandler)
+  source.addEventListener('error', errorHandler)
 }
