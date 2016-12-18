@@ -27,7 +27,7 @@ const markup = html =>
   </script>
 `
 
-let index = flyd.stream()
+const index = flyd.stream()
 
 export async function renderIndex (ctx) {
   ctx.body = index()
