@@ -1,7 +1,17 @@
-import logger from 'debug'
+/* global localStorage */
 
-const appPrefix = ['[T-BO]']
-const appLog = (prefixes) => {
+import logger from 'debug'
+import env from '../../client/boundary/env'
+
+const appPrefix = ['TBO']
+
+function setBrowserDebugLevel () {
+  if (typeof window === 'undefined') { return }
+  localStorage.debug = `${env.debug}`
+}
+
+function appLog (prefixes) {
+  setBrowserDebugLevel()
   const prefix = appPrefix.concat(prefixes).join(':')
   return logger(prefix)
 }
