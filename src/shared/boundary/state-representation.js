@@ -17,9 +17,9 @@ export const validate = validateAndLog({
 const numbers = range(1, 10).map(x => Math.random())
 function row (x, i) {
   if (Math.random() < 0.5) {
-    list[i] = Math.random()
+    numbers[i] = Math.random()
   }
-  return h('p.row', list[i])
+  return h('p.row', numbers[i])
 }
 function list () {
   const children = numbers.map(row)
