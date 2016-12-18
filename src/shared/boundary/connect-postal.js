@@ -11,27 +11,29 @@ const subscribeLog = logConsole('connect', 'postal-subscribe')
 const channel = 't_bo-sam'
 
 function hasData (data) { return data !== undefined }
-const busToStream = stream => function busToStreamHandler (data, envelope) {
-  stream({data, envelope})
-}
-const logBusToStream = topic => function logBusToStreamHandler (message) {
-  subscribeLog(topic, JSON.stringify({message}))
-}
+
 const subscribe = stream => function subscribeHandler (topic) {
   subscribeLog('set source to topics', topic)
-  flyd.on(logBusToStream(topic), stream)
+  flyd.on(function logBusToStreamHandler (message) {
+    subscribeLog(topic, JSON.stringify({message}))
+  }, stream)
+
   return postal.subscribe({
     channel,
     topic,
-    callback: busToStream(stream),
+    callback: function busToStreamHandler (data, envelope) {
+      stream({data, envelope})
+    },
   })
 }
+
 const publish = targets => function publishHandler (data) {
   targets.forEach(topic => {
     publishLog(targets, JSON.stringify(data))
     postal.publish({channel, topic, data})
   })
 }
+
 const unsubscribe = (topics, targets, subs) => function unsubscribeHandler (end) {
   log('unsubscribe', topics, targets)
   subs.forEach(sub => { sub.unsubscribe() })
@@ -43,14 +45,10 @@ export function getSource ({topics}) {
   return {subs, source: stream}
 }
 
-export function setSink ({stream, targets}) {
+export function getSink ({targets, stream = flyd.stream()}) {
   stream = filter(hasData, stream)
   flyd.on(publish(targets), stream)
   return stream
-}
-
-export function getSink ({targets}) {
-  return setSink({stream: flyd.stream(), targets})
 }
 
 export function connect ({topics, validate, handler, targets = []}) {
@@ -59,7 +57,7 @@ export function connect ({topics, validate, handler, targets = []}) {
     flyd.map(prop('data')),
     flyd.map(handler)
   )(source)
-  const link = setSink({stream, targets})
+  const link = getSink({stream, targets})
   flyd.on(unsubscribe(topics, targets, subs), link.end)
   return link
 }
