@@ -4,7 +4,7 @@ import flyd from 'flyd'
 import {pipe} from 'ramda'
 import {getSource} from '../../shared/boundary/connect-postal'
 
-const socketLog = logConsole('test', 'socket')
+const log = logConsole('bus-to-sse-adapter')
 
 function busToSseData (message) {
   return `data: ${JSON.stringify(message)}\n\n`
@@ -15,7 +15,7 @@ const onClose = (socket, subs, stream, what) => {
     subs.forEach((sub) => { sub.unsubscribe() })
     stream.end(true)
     socket.removeListener(what, onCloseHandler)
-    socketLog('stream', what, message)
+    log('socket closed', what, message)
   }
   return onCloseHandler
 }

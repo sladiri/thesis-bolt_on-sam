@@ -19,16 +19,16 @@ export default url => {
   }
 
   function openHandler (event) {
-    logConsole('sse', 'open')(logMessage(event))
+    logConsole('sse-to-bus-adapter', 'open')(logMessage(event))
     source.removeEventListener('open', openHandler)
     source.addEventListener('message', messageHandler)
   }
 
   function errorHandler (event) {
     if (event.readyState === EventSource.CLOSED) {
-      logConsole('sse', 'closed')(logMessage(event))
+      logConsole('sse-to-bus-adapter', 'closed')(logMessage(event))
     } else {
-      logConsole('sse', 'error')(logMessage(event))
+      logConsole('sse-to-bus-adapter', 'error')(logMessage(event))
     }
     source = undefined
     sinks = undefined
