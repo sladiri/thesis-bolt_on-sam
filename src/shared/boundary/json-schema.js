@@ -8,10 +8,6 @@ const ajv = new Ajv({
   allErrors: true,
 })
 
-ajv.addKeyword('instanceof', {
-  compile: instance => data => data instanceof instance,
-})
-
 export default (schema, logger = log) => {
   const validate = ajv.compile(schema)
   return input =>
