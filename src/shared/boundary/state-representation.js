@@ -7,9 +7,13 @@ import {range} from 'ramda'
 const log = logConsole('state-representation')
 
 export const validate = validateAndLog({
+  required: ['model'],
   properties: {
     model: {
-      field: {type: 'number'},
+      required: ['field'],
+      properties: {
+        field: {type: 'number'},
+      },
     },
   },
 }, log)
@@ -71,7 +75,7 @@ const views = {
   },
 }
 
-export default function stateRepresentation (payload) {
-  const view = views.initial(payload.model)
+export default function stateRepresentation ({model}) {
+  const view = views.initial(model)
   return view
 }
