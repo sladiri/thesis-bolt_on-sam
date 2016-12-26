@@ -38,8 +38,6 @@ export async function renderIndex (ctx) {
 }
 
 export function onServerStateRepresentation (input) {
-  if (!validate(input)) { return }
-
   pipe(
     stateRepresentation,
     renderToString,

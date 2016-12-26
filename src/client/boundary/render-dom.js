@@ -9,8 +9,6 @@ const render = curry(_render)
 const domTarget = document.getElementById('root')
 
 function onClientStateRepresentation (input) {
-  if (!validate(input)) { return }
-
   pipe(
     stateRepresentation,
     render(__, domTarget)

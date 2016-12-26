@@ -2,7 +2,7 @@ import {logConsole} from './logger'
 import postal from 'postal/lib/postal.lodash'
 import flyd from 'flyd'
 import filter from 'flyd/module/filter'
-import {prop, pipe} from 'ramda'
+import {prop, pipe, when} from 'ramda'
 
 const log = logConsole('connect')
 const publishLog = logConsole('connect', 'postal-publish')
@@ -55,7 +55,7 @@ export function connect ({topics, validate, handler, targets = []}) {
   const {subs, source} = getSource({topics})
   const stream = pipe(
     flyd.map(prop('data')),
-    flyd.map(handler)
+    flyd.map(when(validate, handler)),
   )(source)
   const link = getSink({stream, targets})
   flyd.on(unsubscribe(topics, targets, subs), link.end)
