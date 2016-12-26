@@ -10,7 +10,7 @@ import * as test from './routes/test'
 import createServer from './server'
 
 import {connect, getSink} from '../../shared/boundary/connect-postal'
-import busToSse from './bus-to-sse-adapter'
+import busToSse from './bus-adapters/bus-to-sse-adapter'
 
 import modelOptions from '../../shared/control/model'
 
