@@ -12,7 +12,7 @@ function onClientStateRepresentation (input) {
   pipe(
     stateRepresentation,
     render(__, domTarget)
-  )({model: input.model})
+  )(input)
 
   log('rendered')
 }

@@ -43,7 +43,7 @@ export function onServerStateRepresentation (input) {
     renderToString,
     markup,
     index,
-  )({model: input.model})
+  )(input)
 
   log('rendered')
 }
