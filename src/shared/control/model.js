@@ -26,5 +26,5 @@ export default {
   topics: ['propose'],
   validate,
   handler: onPropose,
-  targets: ['stateRepresentation']
+  targets: ['stateRepresentation'],
 }
