@@ -1,8 +1,8 @@
-import {logConsole} from '../../shared/boundary/logger'
+import {logConsole} from '../../../shared/boundary/logger'
 import {PassThrough} from 'stream'
 import flyd from 'flyd'
 import {pipe} from 'ramda'
-import {getSource} from '../../shared/boundary/connect-postal'
+import {getSource} from '../../../shared/boundary/connect-postal'
 
 const log = logConsole('bus-to-sse-adapter')
 

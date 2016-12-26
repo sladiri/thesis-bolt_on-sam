@@ -1,7 +1,7 @@
-/* global EventSource */
+import {logConsole} from '../../../shared/boundary/logger'
+import {getSink} from '../../../shared/boundary/connect-postal'
 
-import {logConsole} from '../../shared/boundary/logger'
-import {getSink} from '../../shared/boundary/connect-postal'
+const log = logConsole('sse-to-bus-adapter')
 
 const logMessage = event =>
   `${event.target.url} ; readyState = ${event.target.readyState}`
@@ -11,6 +11,7 @@ export default url => {
   let sinks = {}
 
   function messageHandler (event) {
+    log('got message', JSON.stringify(event))
     const payload = JSON.parse(event.data)
     const target = payload.envelope.topic
     sinks = sinks || {}
@@ -19,16 +20,16 @@ export default url => {
   }
 
   function openHandler (event) {
-    logConsole('sse-to-bus-adapter', 'open')(logMessage(event))
+    log('open', logMessage(event))
     source.removeEventListener('open', openHandler)
     source.addEventListener('message', messageHandler)
   }
 
   function errorHandler (event) {
     if (event.readyState === EventSource.CLOSED) {
-      logConsole('sse-to-bus-adapter', 'closed')(logMessage(event))
+      log('closed', logMessage(event))
     } else {
-      logConsole('sse-to-bus-adapter', 'error')(logMessage(event))
+      log('error', logMessage(event))
     }
     source = undefined
     sinks = undefined
