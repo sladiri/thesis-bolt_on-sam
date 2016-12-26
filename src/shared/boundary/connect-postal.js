@@ -39,15 +39,20 @@ const unsubscribe = (topics, targets, subs) => function unsubscribeHandler (end)
   subs.forEach(sub => { sub.unsubscribe() })
 }
 
+const setSink = ({targets, stream}) => {
+  stream = filter(hasData, stream)
+  flyd.on(publish(targets), stream)
+}
+
 export function getSource ({topics}) {
   const stream = filter(hasData, flyd.stream())
   const subs = topics.map(subscribe(stream))
   return {subs, source: stream}
 }
 
-export function getSink ({targets, stream = flyd.stream()}) {
-  stream = filter(hasData, stream)
-  flyd.on(publish(targets), stream)
+export function getSink ({targets}) {
+  const stream = flyd.stream()
+  setSink({targets, stream})
   return stream
 }
 
@@ -57,7 +62,7 @@ export function connect ({topics, validate, handler, targets = []}) {
     flyd.map(prop('data')),
     flyd.map(when(validate, handler)),
   )(source)
-  const link = getSink({stream, targets})
-  flyd.on(unsubscribe(topics, targets, subs), link.end)
-  return link
+  setSink({targets, stream})
+  flyd.on(unsubscribe(topics, targets, subs), stream.end)
+  return stream
 }
