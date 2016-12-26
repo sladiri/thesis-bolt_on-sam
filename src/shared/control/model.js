@@ -1,5 +1,6 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
+import {pipe} from 'ramda'
 
 const log = logConsole('model')
 
@@ -13,10 +14,12 @@ const model = {
   field: 42,
 }
 
+const clone = pipe(::JSON.stringify, ::JSON.parse)
+
 export function onPropose () {
-  const clone = JSON.parse(JSON.stringify(model))
+  const cloned = clone(model)
   model.field += 1
-  return {model: clone}
+  return {model: cloned}
 }
 
 export default {
