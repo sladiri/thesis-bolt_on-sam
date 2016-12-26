@@ -12,22 +12,19 @@ import createServer from './server'
 import {connect, getSink} from '../../shared/boundary/connect-postal'
 import busToSse from './bus-to-sse-adapter'
 
+import modelOptions from '../../shared/control/model'
+
 function createApp () {
   const app = new Koa()
 
   app.use(errorHandler)
   app.use(responseLogger)
-
   app.use(mount('/public', serveFiles('/public')))
-
   app.use(prettyJSON())
-
   Object.keys(test).forEach(key => {
     app.use(mount(`/test/${key}`, test[key]))
   })
-
   app.use(mount('/sse', busToSse))
-
   app.use(mount(renderIndex))
 
   return app
@@ -35,14 +32,10 @@ function createApp () {
 
 createServer(createApp().callback(), () => {
   connect(renderIndexOptions)
-  getSink({targets: ['stateRepresentation']})({
-    model: {field: 42},
-  })
+  connect(modelOptions)
+  getSink({targets: ['propose']})(null)
 
-  let i = 0
   setInterval(() => {
-    getSink({targets: ['stateRepresentation']})({
-      model: {field: 666 + i++},
-    })
-  }, 2000)
+    getSink({targets: ['propose']})(null)
+  }, 20000)
 })
