@@ -7,7 +7,9 @@ import {getSource} from '../../shared/boundary/connect-postal'
 const log = logConsole('bus-to-sse-adapter')
 
 function busToSseData (message) {
-  return `data: ${JSON.stringify(message)}\n\n`
+  const data = `data: ${JSON.stringify(message)}\n\n`
+  log('map data', JSON.stringify(data))
+  return data
 }
 
 const onClose = (socket, subs, stream, what) => {
