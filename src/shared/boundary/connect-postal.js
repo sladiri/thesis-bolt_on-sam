@@ -12,19 +12,19 @@ function hasData (data) { return data !== undefined }
 const subscribe = (stream, logTag) => {
   const subscribeLog = logConsole(logName, 'subscribe', logTag)
   return function subscribeHandler (topic) {
-  subscribeLog('set source to topics', topic)
-  flyd.on(function logBusToStreamHandler (message) {
-    subscribeLog(topic, JSON.stringify({message}))
-  }, stream)
+    subscribeLog('set source to topics', topic)
+    flyd.on(function logBusToStreamHandler (message) {
+      subscribeLog(topic, JSON.stringify({message}))
+    }, stream)
 
-  return postal.subscribe({
-    channel,
-    topic,
-    callback: function busToStreamHandler (data, envelope) {
-      stream({data, envelope})
-    },
-  })
-}
+    return postal.subscribe({
+      channel,
+      topic,
+      callback: function busToStreamHandler (data, envelope) {
+        stream({data, envelope})
+      },
+    })
+  }
 }
 
 const publish = (targets, logTag) => function publishHandler (data) {
@@ -66,4 +66,15 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
   setSink({targets, stream, logTag})
   flyd.on(unsubscribe(topics, logTag, targets, subs), stream.end)
   return stream
+}
+
+export function toBusAdapter ({sinks, logTag}) {
+  const adapterLog = logConsole(logName, 'toBusAdapter', logTag)
+  return function messageHandler (data) {
+    adapterLog('got data', JSON.stringify(data))
+    const payload = JSON.parse(data)
+    const target = payload.envelope.topic
+    const sink = sinks[target] = sinks[target] || getSink({targets: [target], logTag})
+    sink(payload.data)
+  }
 }
