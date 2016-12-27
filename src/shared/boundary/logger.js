@@ -17,7 +17,7 @@ function appLog (prefixes) {
 }
 
 export function format (messages) {
-  return `:: ${messages.join(' : ')}`
+  return `:: ${messages.join(' ; ')}`
 }
 
 export const logConsole = (...prefixes) => {
