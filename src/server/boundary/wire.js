@@ -11,6 +11,7 @@ import createServer from './server'
 
 import {connect, getSink} from '../../shared/boundary/connect-postal'
 import busToSse from './bus-adapters/bus-to-sse-adapter'
+import httpToBus from './bus-adapters/http-to-bus-adapter'
 
 import modelOptions from '../../shared/control/model'
 
@@ -25,6 +26,7 @@ function createApp () {
     app.use(mount(`/test/${key}`, test[key]))
   })
   app.use(mount('/sse', busToSse))
+  app.use(mount('/actions', httpToBus))
   app.use(mount(renderIndex))
 
   return app
