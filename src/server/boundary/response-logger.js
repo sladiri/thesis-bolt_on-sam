@@ -17,7 +17,7 @@ export default async function responseLogger (ctx, next) {
   await next()
 
   const elapsed = new Date() - start
-  ctx.set('X-Response-Time', `${elapsed}ms`)
+  ctx.set('x-response-time', `${elapsed}ms`)
 
   if (!isJspmRequest(url)) {
     log(`end, ${elapsed}ms elapsed`)
