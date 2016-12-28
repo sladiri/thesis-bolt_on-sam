@@ -2,19 +2,36 @@ import {logConsole} from './logger'
 import postal from 'postal/lib/postal.lodash'
 import flyd from 'flyd'
 import filter from 'flyd/module/filter'
-import {prop, pipe, when} from 'ramda'
+import {prop, pipe, when, head} from 'ramda'
+import validateAndLog from './json-schema'
+
+const channel = 't_bo-sam'
 
 const logName = 'connect-postal'
-const channel = 't_bo-sam'
+const log = logConsole(logName)
+
+export const validate = validateAndLog({
+  required: ['envelope', 'data'],
+  properties: {
+    envelope: {
+      required: ['channel', 'data', 'timeStamp', 'topic'],
+      properties: {
+        channel: {type: 'string'},
+        timeStamp: {type: 'string'},
+        topic: {type: 'string'},
+      },
+    },
+  },
+}, log)
 
 function hasData (data) { return data !== undefined }
 
 const subscribe = (stream, logTag) => {
-  const subscribeLog = logConsole(logName, 'subscribe', logTag)
+  const subscribeLog = logConsole(logName, logTag)
   return function subscribeHandler (topic) {
-    subscribeLog('set source to topics', topic)
+    subscribeLog('subscription set source to topics', topic)
     flyd.on(function logBusToStreamHandler (message) {
-      subscribeLog(topic, JSON.stringify({message}))
+      subscribeLog('subscription got message', topic, JSON.stringify({message}))
     }, stream)
 
     return postal.subscribe({
@@ -28,15 +45,16 @@ const subscribe = (stream, logTag) => {
 }
 
 const publish = (targets, logTag) => function publishHandler (data) {
-  const publishLog = logConsole(logName, 'postal-publish', logTag)
+  const publishLog = logConsole(logName, logTag)
+  publishLog('about to publish data to targets', targets)
   targets.forEach(topic => {
-    publishLog(targets, JSON.stringify(data))
+    publishLog('publishing data to target', topic, JSON.stringify(data))
     postal.publish({channel, topic, data})
   })
 }
 
 const unsubscribe = (topics, logTag, targets, subs) => function unsubscribeHandler (end) {
-  logConsole(logName, 'unsubscribe', logTag)(topics, targets)
+  logConsole(logName, logTag)('unsubscribing', topics, targets)
   subs.forEach(sub => { sub.unsubscribe() })
 }
 
@@ -61,7 +79,7 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
   const {subs, source} = getSource({topics, logTag})
   const stream = pipe(
     flyd.map(prop('data')),
-    flyd.map(when(validate, handler)),
+    flyd.map(when(pipe(validate, head), handler)),
   )(source)
   setSink({targets, stream, logTag})
   flyd.on(unsubscribe(topics, logTag, targets, subs), stream.end)
@@ -71,8 +89,14 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
 export function toBusAdapter ({sinks, logTag}) {
   const adapterLog = logConsole(logName, 'toBusAdapter', logTag)
   return function messageHandler (data) {
-    adapterLog('got data', JSON.stringify(data))
     const payload = JSON.parse(data)
+
+    const [ok, message] = validate(payload)
+    if (!ok) {
+      adapterLog('invalid data schema', data)
+      throw new Error(JSON.stringify(message))
+    }
+
     const target = payload.envelope.topic
     const sink = sinks[target] = sinks[target] || getSink({targets: [target], logTag})
     sink(payload.data)

@@ -23,11 +23,11 @@ const onClose = (socket, subs, stream, what) => {
   return onCloseHandler
 }
 
-export default async function busToSseAdapter (ctx) {
+export default topics => async function busToSseAdapter (ctx) {
   const {socket} = ctx
   const socketStream = new PassThrough()
 
-  const {subs, source} = getSource({topics: ['*'], logTag: logName})
+  const {subs, source} = getSource({topics, logTag: logName})
 
   pipe(
     flyd.map(busToSseData),

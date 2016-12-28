@@ -8,7 +8,7 @@ const log = logConsole(logName)
 
 const domTarget = document.getElementById('root')
 
-function onClientStateRepresentation (input) {
+function onStateRepresentation (input) {
   pipe(
     stateRepresentation,
     curry(render)(__, domTarget)
@@ -21,5 +21,5 @@ export default {
   topics: ['stateRepresentation'],
   logTag: logName,
   validate,
-  handler: onClientStateRepresentation,
+  handler: onStateRepresentation,
 }

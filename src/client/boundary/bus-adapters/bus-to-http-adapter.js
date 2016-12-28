@@ -8,7 +8,7 @@ const log = logConsole(logName)
 
 function busToBody (message) {
   log('map data', JSON.stringify(message))
-  return JSON.stringify(message.data)
+  return JSON.stringify(message)
 }
 
 const defaultOptions = {
@@ -18,7 +18,7 @@ const defaultOptions = {
   },
 }
 
-export default function busToHttpAdapter (url) {
+export default function busToHttpAdapter ({url, targets}) {
   function sendHttp (body) {
     fetch(new Request(url, {...defaultOptions, body}))
       .then(response => {
@@ -27,7 +27,7 @@ export default function busToHttpAdapter (url) {
       .catch(log)
   }
 
-  const {source} = getSource({topics: ['*'], logTag: logName})
+  const {source} = getSource({topics: targets, logTag: logName})
   pipe(
       flyd.map(busToBody),
       flyd.on(sendHttp),

@@ -1,8 +1,10 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import {renderToString} from 'inferno-server'
 import flyd from 'flyd'
+import takeUntil from 'flyd/module/takeuntil'
 import {pipe} from 'ramda'
 import stateRepresentation, {validate} from '../../../shared/boundary/state-representation'
+import {getSink} from '../../../shared/boundary/connect-postal'
 
 const logName = 'render-index'
 const log = logConsole(logName)
@@ -20,7 +22,7 @@ function markup (html) {
 </head>
 <body>
   <div id="root">
-    <h2>static view</h2>
+    <h2 style="float: right;">static view</h2>
     ${html || '<h2>no view</h2>'}
   </div>
   <script>
@@ -34,11 +36,20 @@ function markup (html) {
 
 const index = flyd.stream()
 
-export async function renderIndex (ctx) {
-  ctx.body = index()
+export async function renderString (ctx) {
+  let killer = flyd.stream()
+  let stream = takeUntil(index, killer)
+  flyd.on(view => {
+    ctx.body = view
+    killer(true)
+    killer = undefined
+    stream = undefined
+  }, stream)
+
+  getSink({targets: ['propose'], logTag: logName})(null)
 }
 
-export function onServerStateRepresentation (input) {
+export function onStateRepresentation (input) {
   pipe(
     stateRepresentation,
     renderToString,
@@ -53,5 +64,5 @@ export default {
   topics: ['stateRepresentation'],
   logTag: logName,
   validate,
-  handler: onServerStateRepresentation,
+  handler: onStateRepresentation,
 }

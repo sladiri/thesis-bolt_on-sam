@@ -11,10 +11,16 @@ const ajv = new Ajv({
 
 export default (schema, logger = log) => {
   const validate = ajv.compile(schema)
-  return input =>
-    validate(input) ||
-    do{
-      logger('[schema error]', JSON.stringify(validate.errors), JSON.stringify(input))
-      false
-    }
+  return input => {
+    const ok = validate(input)
+    return [
+      ok,
+      ok
+        ? undefined
+        : do{
+          logger('[schema error]', JSON.stringify(validate.errors), JSON.stringify(input))
+          validate.errors
+        },
+    ]
+  }
 }
