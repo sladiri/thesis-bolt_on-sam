@@ -32,6 +32,15 @@ export default async function httpToBusAdapter (ctx) {
     limit: '1mb',
     encoding,
   })
+
+  if (!body) {
+    const message = 'JSON body is required'
+    log(message)
+    ctx.status = 400
+    ctx.body = { message }
+    return
+  }
+
   log('got body', body)
 
   const toBus = toBusAdapter({sinks: {}, logTag: logName})
