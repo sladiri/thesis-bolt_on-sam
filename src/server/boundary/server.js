@@ -2,7 +2,8 @@ import {logConsole} from '../../shared/boundary/logger'
 import {readFileSync} from 'fs'
 import http from 'spdy'
 
-const log = logConsole('server')
+const logName = 'server'
+const log = logConsole(logName)
 
 export default function createServer (app, callback) {
   const httpOptions = {

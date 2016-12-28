@@ -4,7 +4,8 @@ import flyd from 'flyd'
 import {pipe} from 'ramda'
 import stateRepresentation, {validate} from '../../../shared/boundary/state-representation'
 
-const log = logConsole('render-index')
+const logName = 'render-index'
+const log = logConsole(logName)
 
 function markup (html) {
   return `
@@ -50,6 +51,7 @@ export function onServerStateRepresentation (input) {
 
 export default {
   topics: ['stateRepresentation'],
+  logTag: logName,
   validate,
   handler: onServerStateRepresentation,
 }

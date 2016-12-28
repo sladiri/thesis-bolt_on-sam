@@ -4,7 +4,8 @@ import validateAndLog from './json-schema'
 import {range} from 'ramda'
 // import * as actions from './actions'
 
-const log = logConsole('state-representation')
+const logName = 'state-representation'
+const log = logConsole(logName)
 
 export const validate = validateAndLog({
   required: ['model'],

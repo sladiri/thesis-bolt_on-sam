@@ -1,7 +1,8 @@
 import {logConsole} from './logger'
 import Ajv from 'ajv'
 
-const log = logConsole('json_schema')
+const logName = 'json_schema'
+const log = logConsole(logName)
 
 const ajv = new Ajv({
   v5: true,

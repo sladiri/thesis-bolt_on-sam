@@ -2,7 +2,8 @@ import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
 import {pipe} from 'ramda'
 
-const log = logConsole('model')
+const logName = 'model'
+const log = logConsole(logName)
 
 export const validate = validateAndLog({
   properties: {
@@ -24,6 +25,7 @@ export function onPropose () {
 
 export default {
   topics: ['propose'],
+  logTag: logName,
   validate,
   handler: onPropose,
   targets: ['stateRepresentation'],

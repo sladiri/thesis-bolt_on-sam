@@ -4,11 +4,12 @@ import flyd from 'flyd'
 import {pipe} from 'ramda'
 import {getSource} from '../../../shared/boundary/connect-postal'
 
-const log = logConsole('bus-to-sse-adapter')
+const logName = 'bus-to-sse-adapter'
+const log = logConsole(logName)
 
 function busToSseData (message) {
   const data = `data: ${JSON.stringify(message)}\n\n`
-  log('map data', JSON.stringify(data))
+  log('map data', data)
   return data
 }
 
@@ -26,7 +27,7 @@ export default async function busToSseAdapter (ctx) {
   const {socket} = ctx
   const socketStream = new PassThrough()
 
-  const {subs, source} = getSource({topics: ['*']})
+  const {subs, source} = getSource({topics: ['*'], logTag: logName})
 
   pipe(
     flyd.map(busToSseData),

@@ -1,6 +1,7 @@
 import {logConsole} from '../../shared/boundary/logger'
 
-const log = logConsole('http')
+const logName = 'repsonse-logger'
+const log = logConsole(logName)
 
 export default async function responseLogger ({set, url, method}, next) {
   const start = new Date()
