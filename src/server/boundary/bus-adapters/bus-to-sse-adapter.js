@@ -9,34 +9,32 @@ const log = logConsole(logName)
 
 function busToSseData (message) {
   const data = `data: ${JSON.stringify(message)}\n\n`
-  log('map data', data)
+  log('map bus data', data)
   return data
 }
 
-const onClose = (socket, subs, stream, what) => {
-  function onCloseHandler (message) {
-    subs.forEach((sub) => { sub.unsubscribe() })
-    stream.end(true)
-    socket.removeListener(what, onCloseHandler)
-    log('socket closed', what, message)
+export default topics => {
+  const {source} = getSource({topics, logTag: logName})
+
+  const onClose = (socket, stream, what) => {
+    function onCloseHandler (message) {
+      stream.end(true)
+      socket.removeListener(what, onCloseHandler)
+      log('socket closed', what, message)
+    }
+    return onCloseHandler
   }
-  return onCloseHandler
-}
 
-export default topics => async function busToSseAdapter (ctx) {
-  const {socket} = ctx
-  const socketStream = new PassThrough()
+  return async function busToSseAdapter (ctx) {
+    const {socket} = ctx
+    const socketStream = new PassThrough()
 
-  const {subs, source} = getSource({topics, logTag: logName})
+    const stream = flyd.on(pipe(busToSseData, ::socketStream.write), source)
 
-  pipe(
-    flyd.map(busToSseData),
-    flyd.on(::socketStream.write),
-  )(source)
+    socket.on('error', onClose(socket, stream, 'error'))
+    socket.on('close', onClose(socket, stream, 'close'))
 
-  socket.on('error', onClose(socket, subs, source, 'error'))
-  socket.on('close', onClose(socket, subs, source, 'close'))
-
-  ctx.type = 'text/event-stream'
-  ctx.body = socketStream
+    ctx.type = 'text/event-stream'
+    ctx.body = socketStream
+  }
 }

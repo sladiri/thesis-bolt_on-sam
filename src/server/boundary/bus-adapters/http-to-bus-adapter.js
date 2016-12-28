@@ -33,18 +33,11 @@ export default async function httpToBusAdapter (ctx) {
     encoding,
   })
 
-  if (!body) {
-    const message = 'JSON body is required'
-    log(message)
-    ctx.status = 400
-    ctx.body = { message }
-    return
+  if (body) {
+    log('got request body', body)
+    const toBus = toBusAdapter({sinks: {}, logTag: logName})
+    toBus(body)
   }
-
-  log('got body', body)
-
-  const toBus = toBusAdapter({sinks: {}, logTag: logName})
-  toBus(body)
 
   ctx.status = 200
 }

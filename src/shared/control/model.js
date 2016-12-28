@@ -17,7 +17,8 @@ const model = {
 
 const clone = pipe(::JSON.stringify, ::JSON.parse)
 
-export function onPropose () {
+export function onPropose (input) {
+  console.log('mmmmmmmmmmmmmmm got input', input)
   const cloned = clone(model)
   model.field += 1
   return {model: cloned}

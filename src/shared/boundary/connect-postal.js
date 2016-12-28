@@ -77,10 +77,7 @@ export function getSink ({targets, logTag}) {
 
 export function connect ({topics, logTag, validate, handler, targets = []}) {
   const {subs, source} = getSource({topics, logTag})
-  const stream = pipe(
-    flyd.map(prop('data')),
-    flyd.map(when(pipe(validate, head), handler)),
-  )(source)
+  const stream = flyd.map(pipe(prop('data'), when(pipe(validate, head), handler)), source)
   setSink({targets, stream, logTag})
   flyd.on(unsubscribe(topics, logTag, targets, subs), stream.end)
   return stream

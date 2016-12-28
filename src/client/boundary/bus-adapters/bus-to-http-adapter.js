@@ -22,14 +22,11 @@ export default function busToHttpAdapter ({url, targets}) {
   function sendHttp (body) {
     fetch(new Request(url, {...defaultOptions, body}))
       .then(response => {
-        log(body, response.status)
+        log('got response from action', response.status, body)
       })
       .catch(log)
   }
 
   const {source} = getSource({topics: targets, logTag: logName})
-  pipe(
-      flyd.map(busToBody),
-      flyd.on(sendHttp),
-    )(source)
+  flyd.on(pipe(busToBody, sendHttp), source)
 }

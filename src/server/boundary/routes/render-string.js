@@ -9,8 +9,8 @@ import {getSink} from '../../../shared/boundary/connect-postal'
 const logName = 'render-index'
 const log = logConsole(logName)
 
-function markup (html) {
-  return `
+const markup = html =>
+`
 <!doctype html>
 <html lang=en>
 <head>
@@ -22,17 +22,11 @@ function markup (html) {
 </head>
 <body>
   <div id="root">
-    <h2 style="float: right;">static view</h2>
+    <h2 style="position: absolute;right: 0;">static view</h2>
     ${html || '<h2>no view</h2>'}
   </div>
-  <script>
-    console.log('index there')
-    Promise.all([
-      System.import('bolt_on-sam'),
-    ])
-  </script>
+  <script>System.import('bolt_on-sam')</script>
 `
-}
 
 const index = flyd.stream()
 
