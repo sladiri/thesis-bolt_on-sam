@@ -7,7 +7,7 @@ const log = logConsole(logName)
 const logMessage = event =>
   [event.target.url, `readyState = ${event.target.readyState}`]
 
-export default url => {
+export default function sseToBusAdapter (url) {
   let source = new EventSource(url)
   let sinks = {}
 
