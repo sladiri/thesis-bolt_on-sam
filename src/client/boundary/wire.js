@@ -1,5 +1,3 @@
-
-import '../control/test'
 import {connect, getSink} from '../../shared/boundary/connect-postal'
 import renderOptions from './render-dom'
 import sseToBus from './bus-adapters/sse-to-bus-adapter'
