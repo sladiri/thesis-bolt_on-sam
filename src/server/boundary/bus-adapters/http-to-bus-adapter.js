@@ -7,15 +7,28 @@ const logName = 'http-to-bus-adapter'
 const log = logConsole(logName)
 
 export default async function httpToBusAdapter (ctx) {
-  const encoding = contentType.parse(ctx.req).parameters.charset
-  if (!encoding) {
-    log('missing encoding')
+  const {req} = ctx
+  let encoding
+
+  try {
+    encoding = contentType.parse(req).parameters.charset
+  } catch ({message}) {
+    log(message)
     ctx.status = 400
+    ctx.body = { message: message }
     return
   }
 
-  const body = await getRawBody(ctx.req, {
-    length: ctx.req.headers['content-length'],
+  if (!encoding) {
+    const message = 'encoding parameter is required'
+    log(message)
+    ctx.status = 400
+    ctx.body = { message }
+    return
+  }
+
+  const body = await getRawBody(req, {
+    length: req.headers['content-length'],
     limit: '1mb',
     encoding,
   })
@@ -23,5 +36,6 @@ export default async function httpToBusAdapter (ctx) {
 
   const toBus = toBusAdapter({sinks: {}, logTag: logName})
   toBus(body)
+
   ctx.status = 200
 }
