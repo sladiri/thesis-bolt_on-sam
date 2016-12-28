@@ -6,8 +6,8 @@ const log = logConsole(logName)
 export default async function errorHandler (ctx, next) {
   try {
     await next()
-  } catch ({status = 500, message}) {
-    log('error', status, message)
+  } catch ({status = 500, message, stack}) {
+    log('error', status, stack)
 
     ctx.status = status
     ctx.body = { message }
