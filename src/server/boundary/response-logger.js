@@ -1,17 +1,20 @@
 import {logConsole} from '../../shared/boundary/logger'
 
-const logName = 'repsonse-logger'
-const log = logConsole(logName)
+const logName = 'response-logger'
 
-export default async function responseLogger ({set, url, method}, next) {
+export default async function responseLogger (ctx, next) {
+  const {method, url} = ctx
+
   const start = new Date()
+  const log = logConsole(logName, `(${method} ${url})`)
+  log('start')
 
   await next()
 
   const elapsed = new Date() - start
-  set('X-Response-Time', `${elapsed}ms`)
+  ctx.set('X-Response-Time', `${elapsed}ms`)
 
   if (!url.startsWith('/public/jspm_packages')) {
-    log(`${method} ${url} ; ${elapsed}ms elapsed`)
+    log(`end, ${elapsed}ms elapsed`)
   }
 }
