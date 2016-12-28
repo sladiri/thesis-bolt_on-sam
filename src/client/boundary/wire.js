@@ -6,6 +6,6 @@ import busToHttp from './bus-adapters/bus-to-http-adapter'
 connect(renderOptions)
 
 sseToBus('/sse')
-busToHttp({url: '/actions', targets: ['propose']})
+busToHttp({url: '/actions', targets: ['actions']})
 
-getSink({targets: ['propose'], logTag: 'client-wire'})(null)
+getSink({targets: ['actions'], logTag: 'client-wire'})(null)

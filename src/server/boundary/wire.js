@@ -10,9 +10,10 @@ import * as test from './routes/test'
 import busToSse from './bus-adapters/bus-to-sse-adapter'
 import httpToBus from './bus-adapters/http-to-bus-adapter'
 
+import {connect} from '../../shared/boundary/connect-postal'
 import createServer from './server'
 import modelOptions from '../../shared/control/model'
-import {connect} from '../../shared/boundary/connect-postal'
+import actionOptions from '../../shared/control/actions'
 
 function createApp () {
   const app = new Koa()
@@ -34,4 +35,5 @@ function createApp () {
 createServer(createApp().callback(), () => {
   connect(renderStringOptions)
   connect(modelOptions)
+  connect(actionOptions)
 })

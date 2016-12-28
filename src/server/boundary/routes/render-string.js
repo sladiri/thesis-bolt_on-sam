@@ -40,7 +40,7 @@ export async function renderString (ctx) {
     stream = undefined
   }, stream)
 
-  getSink({targets: ['propose'], logTag: logName})(null)
+  getSink({targets: ['actions'], logTag: logName})(null)
 }
 
 export function onStateRepresentation (input) {
