@@ -1,0 +1,33 @@
+
+
+{
+  "config": {
+    "target": "https://localhost:3000",
+    "phases": [
+      {"duration": 6000, "arrivalRate": 10, "arrivalCount": 6000}
+    ]
+  },
+  "scenarios": [
+    {
+      "flow": [
+        {
+          "post": {
+            "url": "/actions",
+            "headers": {
+              "content-type": "application/json; charset=UTF-8"
+            },
+            "json": {
+              "data": {"meta": {}},
+              "envelope": {
+                "channel": "t_bo-sam",
+                "topic": "actions",
+                "data": {"meta": {}},
+                "timeStamp": "2016-12-29T17:08:13.900Z"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
