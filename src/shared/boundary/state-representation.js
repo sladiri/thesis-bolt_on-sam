@@ -2,7 +2,7 @@ import {logConsole} from './logger'
 import h from 'inferno-hyperscript'
 import validateAndLog from './json-schema'
 import {range} from 'ramda'
-// import * as actions from './actions'
+import {getSink} from '../../shared/boundary/connect-postal'
 
 const logName = 'state-representation'
 const log = logConsole(logName)
@@ -19,33 +19,34 @@ export const validate = validateAndLog({
   },
 }, log)
 
-const numbers = range(1, 10).map(x => Math.random())
-function row (x, i) {
-  if (Math.random() < 0.5) {
-    numbers[i] = Math.random()
-  }
-  return h('p.row', numbers[i])
-}
+const numbers = range(1, 100).map(x => Math.random())
 function list () {
-  const children = numbers.map(row)
-  return h('div.list', children)
+  return h('div.list', numbers.map((x, i) => {
+    if (Math.random() < 0.5) {
+      numbers[i] = Math.random()
+    }
+    return h('p.row', numbers[i])
+  }))
 }
-
-// const increment = value => {
-//   getSignal().then(signal => {
-//     signal(actions.increment({value}))
-//   })
-// }
-
-function increment (field) { console.log(`Fake click | ${field} | ${new Date()}`) }
 
 function pCount ({field}) {
   return h('p.count', field)
 }
 
+const actionSink = getSink({targets: ['actions'], logTag: logName})
+if (typeof window !== 'undefined') {
+  console.log('clicking action')
+  setInterval(() => {
+    actionSink(null)
+  }, 100)
+}
+
 function button ({field, disabled}) {
   return h('button', {
-    onclick: () => increment(field),
+    onclick: () => {
+      log('field', field)
+      actionSink(null)
+    },
     disabled,
   }, 'Increment Button')
 }
