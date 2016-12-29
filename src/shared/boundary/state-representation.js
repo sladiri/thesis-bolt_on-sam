@@ -34,12 +34,6 @@ function pCount ({field}) {
 }
 
 const actionSink = getSink({targets: ['actions'], logTag: logName})
-if (typeof window !== 'undefined') {
-  console.log('clicking action')
-  setInterval(() => {
-    actionSink(null)
-  }, 100)
-}
 
 function button ({field, disabled}) {
   return h('button', {
