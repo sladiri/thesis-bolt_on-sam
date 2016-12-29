@@ -15,10 +15,8 @@ export const validate = validateAndLog({
   },
 }, log)
 
-export function onAction ({meta}) {
-  return {
-    meta,
-  }
+export function onAction (input) {
+  return input
 }
 
 export default {
