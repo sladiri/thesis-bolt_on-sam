@@ -1,11 +1,16 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import {PassThrough} from 'stream'
 import flyd from 'flyd'
+import filter from 'flyd/module/filter'
 import {pipe} from 'ramda'
 import {getSource} from '../../../shared/boundary/connect-postal'
 
 const logName = 'bus-to-sse-adapter'
 const log = logConsole(logName)
+
+const filterById = session => function filterByIdHandler (message) {
+  return true
+}
 
 function busToSseData (message) {
   const data = `data: ${JSON.stringify(message)}\n\n`
@@ -26,15 +31,20 @@ export default topics => {
   }
 
   return async function busToSseAdapter (ctx) {
-    ctx.session.foo = ctx.session.foo || 1
-    ctx.session.foo += 1
-    log('======================= |||||||||||||||||||||||| sess', JSON.stringify(ctx.session))
-
+    if (!ctx.session.id) {
+      ctx.status = 401
+      ctx.body = 'No session found.'
+      return
+    }
 
     const {socket} = ctx
     const socketStream = new PassThrough()
 
-    const stream = flyd.on(pipe(busToSseData, ::socketStream.write), source)
+    const stream = pipe(
+      filter(filterById(ctx.session)),
+      flyd.map(busToSseData),
+      flyd.on(::socketStream.write),
+    )(source)
 
     socket.on('error', onClose(socket, stream, 'error'))
     socket.on('close', onClose(socket, stream, 'close'))

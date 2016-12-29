@@ -1,5 +1,6 @@
 import Koa from 'koa'
 import convert from 'koa-convert'
+import compose from 'koa-compose'
 
 import prettyJSON from 'koa-json'
 import errorHandler from './request-error-handler'
@@ -11,6 +12,8 @@ import session from 'koa-session'
 import serveFiles from './routes/serve-files'
 
 import * as test from './routes/test'
+
+import {sessionKeys, setupSession} from './session'
 
 import busToSse from './bus-adapters/bus-to-sse-adapter'
 import httpToBus from './bus-adapters/http-to-bus-adapter'
@@ -24,9 +27,6 @@ import renderStringOptions, {renderString} from './routes/render-string'
 function createApp () {
   const app = new Koa()
 
-  app.keys = ['some secret hurr']
-  app.use(convert(session(app)))
-
   app.use(prettyJSON())
   app.use(errorHandler)
   app.use(responseLogger)
@@ -37,9 +37,12 @@ function createApp () {
     app.use(mount(`/test/${key}`, test[key]))
   })
 
+  app.keys = sessionKeys
+  app.use(convert(session(app)))
+
   app.use(mount('/sse', busToSse(['stateRepresentation'])))
   app.use(mount('/actions', httpToBus))
-  app.use(mount(renderString))
+  app.use(mount(compose([setupSession, renderString])))
 
   return app
 }
