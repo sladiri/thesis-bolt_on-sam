@@ -28,5 +28,8 @@ export default function busToHttpAdapter ({url, targets}) {
   }
 
   const {source} = getSource({topics: targets, logTag: logName})
-  flyd.on(pipe(busToBody, sendHttp), source)
+  pipe(
+    flyd.map(busToBody),
+    flyd.on(sendHttp),
+  )(source)
 }
