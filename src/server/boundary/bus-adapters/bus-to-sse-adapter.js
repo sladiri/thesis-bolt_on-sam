@@ -49,10 +49,6 @@ export default topics => {
     socket.on('error', onClose(socket, stream, 'error'))
     socket.on('close', onClose(socket, stream, 'close'))
 
-    ctx.req.on('close', ctx.res.end())
-    ctx.req.on('finish', ctx.res.end())
-    ctx.req.on('error', ctx.res.end())
-
     ctx.type = 'text/event-stream'
     ctx.body = socketStream
   }
