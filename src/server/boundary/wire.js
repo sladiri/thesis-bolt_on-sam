@@ -1,4 +1,5 @@
 import Koa from 'koa'
+import convert from 'koa-convert'
 
 import prettyJSON from 'koa-json'
 import errorHandler from './request-error-handler'
@@ -24,7 +25,7 @@ function createApp () {
   const app = new Koa()
 
   app.keys = ['some secret hurr']
-  app.use(session(app))
+  app.use(convert(session(app)))
 
   app.use(prettyJSON())
   app.use(errorHandler)
