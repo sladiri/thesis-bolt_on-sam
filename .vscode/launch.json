@@ -6,6 +6,14 @@
   "configurations": [
     {
       "type": "node",
+      "request": "attach",
+      "name": "port 5858",
+      "port": 5858,
+      "sourceMaps": true,
+      "outFiles": []
+    },
+    {
+      "type": "node",
       "request": "launch",
       "name": "debug:server",
       "cwd": "${workspaceRoot}",
