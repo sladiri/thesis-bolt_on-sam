@@ -7,7 +7,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "launch server",
+      "name": "debug:server",
       "cwd": "${workspaceRoot}",
       "runtimeExecutable": "npm.cmd",
       "runtimeArgs": ["run-script", "debug:server"],
