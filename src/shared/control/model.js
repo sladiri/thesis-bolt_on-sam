@@ -23,16 +23,10 @@ const model = {
 const jwtSecret = 'shhhhh'
 
 export function onPropose ({meta}) {
-  let decoded
-  if (!meta.secret) {
-    decoded = { id: Number.MIN_SAFE_INTEGER }
-  } else {
-    try {
-      decoded = jwt.verify(meta.secret, jwtSecret)
-    } catch (error) {
-      log('error decoding token', error)
-    }
-  }
+  const decoded = meta.secret
+    ? jwt.verify(meta.secret, jwtSecret)
+    : { id: Number.MIN_SAFE_INTEGER }
+
   decoded.id += 1
   const secret = jwt.sign(decoded, jwtSecret)
 
