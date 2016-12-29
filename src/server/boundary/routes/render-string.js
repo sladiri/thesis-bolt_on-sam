@@ -29,6 +29,7 @@ const markup = html =>
 `
 
 const index = flyd.stream()
+const actionSink = getSink({targets: ['actions'], logTag: logName})
 
 export async function renderString (ctx) {
   let killer = flyd.stream()
@@ -40,7 +41,7 @@ export async function renderString (ctx) {
     stream = undefined
   }, stream)
 
-  getSink({targets: ['actions'], logTag: logName})(null)
+  actionSink(null)
 }
 
 export function onStateRepresentation (input) {
