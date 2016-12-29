@@ -5,13 +5,20 @@ const logName = 'actions'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
+  required: ['meta'],
   properties: {
-    foo: {type: 'string'},
+    meta: {
+      properties: {
+        secret: {type: 'string'},
+      },
+    },
   },
 }, log)
 
-export function onAction (input) {
-  return null
+export function onAction ({meta}) {
+  return {
+    meta,
+  }
 }
 
 export default {

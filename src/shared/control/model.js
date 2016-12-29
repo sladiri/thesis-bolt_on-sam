@@ -1,13 +1,18 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
-import {pipe} from 'ramda'
+import jwt from 'jsonwebtoken'
 
 const logName = 'model'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
+  required: ['meta'],
   properties: {
-    foo: {type: 'string'},
+    meta: {
+      properties: {
+        secret: {type: 'string'},
+      },
+    },
   },
 }, log)
 
@@ -15,12 +20,27 @@ const model = {
   field: 42,
 }
 
-const clone = pipe(::JSON.stringify, ::JSON.parse)
+const jwtSecret = 'shhhhh'
 
-export function onPropose (input) {
-  const cloned = clone(model)
+export function onPropose ({meta}) {
+  let decoded
+  if (!meta.secret) {
+    decoded = { id: Number.MIN_SAFE_INTEGER }
+  } else {
+    try {
+      decoded = jwt.verify(meta.secret, jwtSecret)
+    } catch (error) {
+      log('error decoding token', error)
+    }
+  }
+  decoded.id += 1
+  const secret = jwt.sign(decoded, jwtSecret)
+
   model.field += 1
-  return {model: cloned}
+  return {
+    meta: {...meta, secret},
+    model: {...model, id: decoded.id},
+  }
 }
 
 export default {

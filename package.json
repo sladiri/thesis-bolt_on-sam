@@ -62,6 +62,7 @@
     "inferno": "^0.7.27",
     "inferno-hyperscript": "^2.0.3",
     "inferno-server": "^0.7.27",
+    "jsonwebtoken": "^7.2.1",
     "koa": "^2.0.0",
     "koa-json": "^2.0.2",
     "koa-mount": "^2.0.0",

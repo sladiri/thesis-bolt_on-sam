@@ -41,7 +41,7 @@ export async function renderString (ctx) {
     stream = undefined
   }, stream)
 
-  actionSink(null)
+  actionSink({meta: {}})
 }
 
 export function onStateRepresentation (input) {

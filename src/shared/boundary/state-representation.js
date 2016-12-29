@@ -29,17 +29,13 @@ function list () {
   }))
 }
 
-function pCount ({field}) {
-  return h('p.count', field)
-}
-
 const actionSink = getSink({targets: ['actions'], logTag: logName})
 
-function button ({field, disabled}) {
+function button (meta, {field, disabled}) {
   return h('button', {
     onclick: () => {
       log('field', field)
-      actionSink(null)
+      actionSink({meta})
     },
     disabled,
   }, 'Increment Button')
@@ -50,28 +46,19 @@ function root (children) {
 }
 
 const views = {
-  initial (model) {
+  initial ({meta, model}) {
     return root([
-      pCount(model),
+      h('p.count', model.field),
+      h('p', model.id || 'no id'),
       h('br'),
-      button(model),
+      button(meta, model),
       h('br'),
       list(),
     ])
   },
-
-  danger (model) {
-    return root([
-      pCount(model),
-      h('br'),
-      button({...model, disabled: true}),
-      h('br'),
-      h('span.danger', 'DANGER'),
-    ])
-  },
 }
 
-export default function stateRepresentation ({model}) {
-  const view = views.initial(model)
+export default function stateRepresentation (input) {
+  const view = views.initial(input)
   return view
 }
