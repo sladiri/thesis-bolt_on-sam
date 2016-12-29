@@ -32,6 +32,10 @@ const index = flyd.stream()
 const actionSink = getSink({targets: ['actions'], logTag: logName})
 
 export async function renderString (ctx) {
+  ctx.session.foo = ctx.session.foo || 1
+  ctx.session.foo += 1
+  log('|||||||||||||||||||||||||| ========================= sess', JSON.stringify(ctx.session))
+
   let killer = flyd.stream()
   let stream = takeUntil(index, killer)
   flyd.on(view => {

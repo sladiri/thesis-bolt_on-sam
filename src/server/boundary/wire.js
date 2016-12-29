@@ -6,6 +6,7 @@ import responseLogger from './response-logger'
 
 import mount from 'koa-mount'
 
+import session from 'koa-session'
 import serveFiles from './routes/serve-files'
 
 import * as test from './routes/test'
@@ -21,6 +22,9 @@ import renderStringOptions, {renderString} from './routes/render-string'
 
 function createApp () {
   const app = new Koa()
+
+  app.keys = ['some secret hurr']
+  app.use(session(app))
 
   app.use(prettyJSON())
   app.use(errorHandler)

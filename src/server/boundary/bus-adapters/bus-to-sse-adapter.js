@@ -26,6 +26,11 @@ export default topics => {
   }
 
   return async function busToSseAdapter (ctx) {
+    ctx.session.foo = ctx.session.foo || 1
+    ctx.session.foo += 1
+    log('======================= |||||||||||||||||||||||| sess', JSON.stringify(ctx.session))
+
+
     const {socket} = ctx
     const socketStream = new PassThrough()
 
