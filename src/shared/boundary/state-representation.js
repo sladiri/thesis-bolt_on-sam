@@ -19,7 +19,7 @@ export const validate = validateAndLog({
   },
 }, log)
 
-const numbers = range(1, 100).map(x => Math.random())
+const numbers = range(1, 12).map(x => Math.random())
 function list () {
   return h('div.list', numbers.map((x, i) => {
     if (Math.random() < 0.5) {
