@@ -13,22 +13,20 @@ const filterById = session => function filterByIdHandler (message) {
 }
 
 function busToSseData (message) {
-  const data = `data: ${JSON.stringify(message)}\n\n`
-  log('map bus data', data)
-  return data
+  return `data: ${JSON.stringify(message)}\n\n`
+}
+
+const onClose = (socket, stream, what) => {
+  function onCloseHandler (message) {
+    stream.end(true)
+    socket.removeListener(what, onCloseHandler)
+    log('socket closed', what, message)
+  }
+  return onCloseHandler
 }
 
 export default topics => {
   const {source} = getSource({topics, logTag: logName})
-
-  const onClose = (socket, stream, what) => {
-    function onCloseHandler (message) {
-      stream.end(true)
-      socket.removeListener(what, onCloseHandler)
-      log('socket closed', what, message)
-    }
-    return onCloseHandler
-  }
 
   return async function busToSseAdapter (ctx) {
     if (!ctx.session.id) {
