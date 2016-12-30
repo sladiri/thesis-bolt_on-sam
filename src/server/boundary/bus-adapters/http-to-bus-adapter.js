@@ -15,15 +15,15 @@ export default async function httpToBusAdapter (ctx) {
   } catch ({message}) {
     log(message)
     ctx.status = 400
-    ctx.body = { message: message }
+    ctx.body = {message}
     return
   }
 
   if (!encoding) {
-    const message = 'encoding parameter is required'
+    const message = 'Encoding parameter is required.'
     log(message)
     ctx.status = 400
-    ctx.body = { message }
+    ctx.body = {message}
     return
   }
 
