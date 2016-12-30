@@ -31,7 +31,7 @@ const subscribe = (stream, logTag) => {
   return function subscribeHandler (topic) {
     subscribeLog('subscription set source to topics', topic)
     flyd.on(function logBusToStreamHandler (message) {
-      subscribeLog('subscription got message', topic, JSON.stringify({message}))
+      subscribeLog(`subscription got message on [${topic}]`)
     }, stream)
 
     return postal.subscribe({
@@ -48,7 +48,7 @@ const publish = (targets, logTag) => function publishHandler (data) {
   const publishLog = logConsole(logName, logTag)
   publishLog('about to publish data to targets', targets)
   targets.forEach(topic => {
-    publishLog('publishing data to target', topic, JSON.stringify(data))
+    publishLog(`publishing data to [${topic}]`)
     postal.publish({channel, topic, data})
   })
 }
@@ -88,17 +88,17 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
 
 export function toBusAdapter ({sinks, logTag}) {
   const adapterLog = logConsole(logName, 'toBusAdapter', logTag)
-  return function messageHandler (data) {
-    const payload = JSON.parse(data)
+  return function messageHandler ({body, sessionId}) {
+    const payload = JSON.parse(body)
 
     const [ok, message] = validate(payload)
     if (!ok) {
-      adapterLog('invalid data schema', data)
+      adapterLog('invalid json schema', body)
       throw new Error(JSON.stringify(message))
     }
 
     const target = payload.envelope.topic
     const sink = sinks[target] = sinks[target] || getSink({targets: [target], logTag})
-    sink(payload.data)
+    sink({...payload.data, meta: {sessionId, ...payload.data.meta}})
   }
 }

@@ -7,7 +7,7 @@ const logName = 'bus-to-http-adapter'
 const log = logConsole(logName)
 
 function busToBody (message) {
-  log('map data', JSON.stringify(message))
+  log('map action data')
   return JSON.stringify(message)
 }
 
@@ -24,7 +24,7 @@ export default function busToHttpAdapter ({url, targets}) {
   function sendHttp (body) {
     fetch(new Request(url, {...defaultOptions, body}))
       .then(response => {
-        log('got response from action', response.status, body)
+        log('got response from action', response.status)
       })
       .catch(log)
   }
