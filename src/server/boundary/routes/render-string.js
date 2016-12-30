@@ -41,7 +41,11 @@ export async function renderString (ctx) {
     stream = undefined
   }, stream)
 
-  actionSink({meta: {}})
+  actionSink({
+    meta: {
+      sessionId: ctx.session.id,
+    },
+  })
 }
 
 export function onStateRepresentation (input) {

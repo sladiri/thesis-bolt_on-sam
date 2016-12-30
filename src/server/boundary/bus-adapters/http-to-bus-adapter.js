@@ -7,6 +7,15 @@ const logName = 'http-to-bus-adapter'
 const log = logConsole(logName)
 
 export default async function httpToBusAdapter (ctx) {
+  const sessionId = ctx.session.id
+  if (!sessionId) {
+    const message = 'Session is required.'
+    log(message)
+    ctx.status = 400
+    ctx.body = {message}
+    return
+  }
+
   const {req} = ctx
   let encoding
 
@@ -34,9 +43,9 @@ export default async function httpToBusAdapter (ctx) {
   })
 
   if (body) {
-    log('got request body', body)
+    log(`got request body from ${sessionId}`)
     const toBus = toBusAdapter({sinks: {}, logTag: logName})
-    toBus(body)
+    toBus({body, sessionId})
   }
 
   ctx.status = 200

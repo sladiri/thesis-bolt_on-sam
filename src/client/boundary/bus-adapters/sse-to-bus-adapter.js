@@ -1,6 +1,5 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import {toBusAdapter} from '../../../shared/boundary/connect-postal'
-import {pipe, prop} from 'ramda'
 
 const logName = 'sse-to-bus-adapter'
 const log = logConsole(logName)
@@ -8,15 +7,22 @@ const log = logConsole(logName)
 const logMessage = event =>
   [event.target.url, `readyState = ${event.target.readyState}`]
 
+
+const toBus = sinks => {
+  const adapter = toBusAdapter({sinks, logTag: logName})
+  return message => {
+    adapter({body: message.data})
+  }
+}
+
 export default function sseToBusAdapter (url) {
   let source = new EventSource(url)
   const sinks = {}
-  const toBus = pipe(prop('data'), toBusAdapter({sinks, logTag: logName}))
 
   function openHandler (event) {
     log('open', ...logMessage(event))
     source.removeEventListener('open', openHandler)
-    source.addEventListener('message', toBus)
+    source.addEventListener('message', toBus(sinks))
   }
 
   function errorHandler (event) {

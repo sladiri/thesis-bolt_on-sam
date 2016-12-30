@@ -8,7 +8,7 @@ const logName = 'bus-to-sse-adapter'
 const log = logConsole(logName)
 
 const filterById = session => function filterByIdHandler (message) {
-  return true
+  return session.id === message.data.meta.sessionId
 }
 
 function busToSseData (message) {
