@@ -98,7 +98,7 @@
       "inferno-dom": "npm:inferno-dom@^0.7.27",
       "inferno-hyperscript": "npm:inferno-hyperscript@^2.0.3",
       "postal": "npm:postal@^2.0.5",
-      "ramda": "npm:ramda@^0.22.1"
+      "ramda": "npm:ramda@0.23.0"
     },
     "devDependencies": {
       "plugin-babel": "npm:systemjs-plugin-babel@^0.0.17"
