@@ -28,6 +28,7 @@ export function onPropose ({meta}) {
   const secret = encryptSecret(decoded)
 
   model.field += 1
+
   return {
     meta: {...meta, secret},
     model: {...model, id: meta.sessionId},
