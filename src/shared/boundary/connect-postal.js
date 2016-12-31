@@ -2,7 +2,7 @@ import {logConsole} from './logger'
 import postal from 'postal/lib/postal.lodash'
 import flyd from 'flyd'
 import filter from 'flyd/module/filter'
-import {prop, pipe, when, head} from 'ramda'
+import {prop, pipe, when, head, assocPath} from 'ramda'
 import validateAndLog from './json-schema'
 
 const channel = 't_bo-sam'
@@ -88,17 +88,18 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
 
 export function toBusAdapter ({sinks, logTag}) {
   const adapterLog = logConsole(logName, 'toBusAdapter', logTag)
-  return function messageHandler ({body, sessionId}) {
-    const payload = JSON.parse(body)
+  return function messageHandler ({data, sessionId}) {
+    const payload = JSON.parse(data)
 
     const [ok, message] = validate(payload)
     if (!ok) {
-      adapterLog('invalid json schema', body)
+      adapterLog('invalid json schema of message')
       throw new Error(JSON.stringify(message))
     }
 
     const target = payload.envelope.topic
     const sink = sinks[target] = sinks[target] || getSink({targets: [target], logTag})
-    sink({...payload.data, meta: {sessionId, ...payload.data.meta}})
+    sink(assocPath(['meta', 'sessionId'], sessionId, payload.data))
+    adapterLog('publish message with sessionId')
   }
 }

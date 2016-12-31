@@ -36,17 +36,13 @@ export default async function httpToBusAdapter (ctx) {
     return
   }
 
-  const body = await getRawBody(req, {
+  const data = await getRawBody(req, {
     length: req.headers['content-length'],
     limit: '1mb',
     encoding,
   })
 
-  if (body) {
-    log(`got request body from ${sessionId}`)
-    const toBus = toBusAdapter({sinks: {}, logTag: logName})
-    toBus({body, sessionId})
-  }
-
+  toBusAdapter({sinks: {}, logTag: logName})({data, sessionId})
   ctx.status = 200
+  log(`got request body from ${sessionId}`)
 }
