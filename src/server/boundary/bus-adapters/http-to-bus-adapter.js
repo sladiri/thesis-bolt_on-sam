@@ -2,6 +2,7 @@ import {logConsole} from '../../../shared/boundary/logger'
 import getRawBody from 'raw-body'
 import contentType from 'content-type'
 import {toBusAdapter} from '../../../shared/boundary/connect-postal'
+import {assocPath, pipe} from 'ramda'
 
 const logName = 'http-to-bus-adapter'
 const log = logConsole(logName)
@@ -36,13 +37,24 @@ export default async function httpToBusAdapter (ctx) {
     return
   }
 
-  const data = await getRawBody(req, {
-    length: req.headers['content-length'],
-    limit: '1mb',
-    encoding,
-  })
-
-  toBusAdapter({sinks: {}, logTag: logName})({data, sessionId})
+  let data
+  try {
+    const body = await getRawBody(req, {
+      length: req.headers['content-length'],
+      limit: '1mb',
+      encoding,
+    })
+    data = JSON.parse(body)
+  } catch ({message}) {
+    log(message)
+    ctx.status = 400
+    ctx.body = {message}
+    return
+  }
+  pipe(
+    assocPath(['data', 'meta', 'sessionId'], sessionId),
+    toBusAdapter({sinks: {}, logTag: logName}),
+  )(data)
   ctx.status = 200
   log(`got request body from ${sessionId}`)
 }

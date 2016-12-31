@@ -11,8 +11,11 @@ const filterById = session => message => session.id === message.data.meta.sessio
 const sanitiseMessage = message => dissocPath(['data', 'meta', 'sessionId'], message)
 const busToSseData = message => `data: ${JSON.stringify(message)}\n\n`
 
-const onClose = (socket, stream, what) => {
+const aliveMessage = () => `data: ${JSON.stringify({KA: true})}\n\n`
+
+const onClose = (socket, stream, keepAlive, what) => {
   function onCloseHandler (message) {
+    clearInterval(keepAlive)
     stream.end(true)
     socket.removeListener(what, onCloseHandler)
     log('socket closed', what, message)
@@ -43,8 +46,10 @@ export default topics => {
         )),
       source)
 
-    socket.on('error', onClose(socket, stream, 'error'))
-    socket.on('close', onClose(socket, stream, 'close'))
+    const keepAlive = setInterval(pipe(aliveMessage, ::socketStream.write), 1000 * 60)
+
+    socket.on('error', onClose(socket, stream, keepAlive, 'error'))
+    socket.on('close', onClose(socket, stream, keepAlive, 'close'))
 
     ctx.type = 'text/event-stream'
     ctx.body = socketStream

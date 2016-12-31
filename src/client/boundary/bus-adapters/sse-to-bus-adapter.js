@@ -1,6 +1,6 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import {toBusAdapter} from '../../../shared/boundary/connect-postal'
-import {pipe, pick} from 'ramda'
+import {pipe, when, prop, not, compose} from 'ramda'
 
 const logName = 'sse-to-bus-adapter'
 const log = logConsole(logName)
@@ -11,8 +11,11 @@ const logMessage = event =>
 const toBus = sinks => {
   const adapter = toBusAdapter({sinks, logTag: logName})
   return pipe(
-    pick(['data']),
-    adapter,
+    prop('data'),
+    ::JSON.parse,
+    when(
+      compose(not, prop('KA')),
+      adapter),
   )
 }
 
