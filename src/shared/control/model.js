@@ -1,6 +1,6 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
-import jwt from 'jsonwebtoken'
+import {encryptSecret, decryptSecret} from '../boundary/jwtoken-secret'
 
 const logName = 'model'
 const log = logConsole(logName)
@@ -20,20 +20,17 @@ const model = {
   field: 42,
 }
 
-const jwtSecret = 'shhhhh'
-
 export function onPropose ({meta}) {
   const decoded = meta.secret
-    ? jwt.verify(meta.secret, jwtSecret)
-    : { id: Number.MIN_SAFE_INTEGER }
+    ? decryptSecret(meta.secret)
+    : { foo: 'bar ' + model.field }
 
-  decoded.id += 1
-  const secret = jwt.sign(decoded, jwtSecret)
+  const secret = encryptSecret(decoded)
 
   model.field += 1
   return {
     meta: {...meta, secret},
-    model: {...model, id: decoded.id},
+    model: {...model, id: meta.sessionId},
   }
 }
 
