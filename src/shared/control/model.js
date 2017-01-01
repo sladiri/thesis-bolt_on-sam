@@ -1,6 +1,5 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
-import {encryptSecret, decryptSecret} from '../boundary/jwtoken-secret'
 
 const logName = 'model'
 const log = logConsole(logName)
@@ -35,6 +34,13 @@ const model = {
 export function onPropose (input) {
   if (input.increment) {
     model.field += 1
+  }
+
+  if (input.userName === null) {
+    model.userName = input.userName
+  }
+  if (db.users.includes(input.userName)) {
+    model.userName = input.userName
   }
 
   return {
