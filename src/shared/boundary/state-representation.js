@@ -12,7 +12,7 @@ export const validate = validateAndLog({
   properties: {
     view: {type: 'string'},
     model: {
-      required: ['field'],
+      required: ['field', 'id', 'userName'],
       properties: {
         field: {type: 'number'},
         userName: {oneOf: [{type: 'string'}, {type: 'null'}]},
@@ -44,7 +44,6 @@ const fields = (model) =>
     h('h2', 'model fields'),
     h('p', [h('span', 'field: '), h('span', model.field)]),
     h('p', [h('span', 'id: '), h('span', model.id)]),
-    h('p', [h('span', 'secret: '), h('span', model.secret)]),
     incrementButton(),
   ])
 
