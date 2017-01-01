@@ -5,22 +5,28 @@ const logName = 'actions'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
-  required: ['meta'],
   properties: {
-    meta: {
-      properties: {
-        sessionId: {type: 'number'},
-      },
+    action: {
+      enum: ['incrementField'],
     },
   },
 }, log)
+
+const actions = {
+  incrementField (increment = 1) {
+    return {increment}
+  },
+}
 
 /**
  * - Context specifiic logic (eg. set default value)
  * - Calls external API (eg. validation service)
 */
 export function onAction (input) {
-  return input
+  const {action, arg} = input
+  return action
+    ? {...input, ...actions[action](arg)}
+    : input
 }
 
 export default {
