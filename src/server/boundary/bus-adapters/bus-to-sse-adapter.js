@@ -1,11 +1,29 @@
 import {logConsole} from '../../../shared/boundary/logger'
+import validateAndLog from '../../../shared/boundary/json-schema'
 import {PassThrough} from 'stream'
 import flyd from 'flyd'
-import {pipe, when, dissocPath} from 'ramda'
+import {pipe, when, dissocPath, allPass} from 'ramda'
 import {getSource} from '../../../shared/boundary/connect-postal'
 
 const logName = 'bus-to-sse-adapter'
 const log = logConsole(logName)
+
+export const validate = validateAndLog({
+  required: ['data', 'envelope'],
+  properties: {
+    data: {
+      required: ['meta'],
+      properties: {
+        meta: {
+          properties: {
+            sessionId: {type: 'number'},
+          },
+        },
+        KA: {type: 'boolean'},
+      },
+    },
+  },
+}, log)
 
 const filterById = session => message => session.id === message.data.meta.sessionId
 const sanitiseMessage = message => dissocPath(['data', 'meta'], message)
@@ -38,7 +56,7 @@ export default topics => {
 
     const stream = flyd.on(
       when(
-        filterById(ctx.session),
+        allPass([validate, filterById(ctx.session)]),
         pipe(
           sanitiseMessage,
           busToSseData,
