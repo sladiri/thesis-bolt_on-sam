@@ -33,14 +33,16 @@ const model = {
  * Maintains data integrity
  */
 export function onPropose (input) {
-  const {meta} = input
+  const {meta, increment} = input
   const decoded = meta.secret
     ? decryptSecret(meta.secret)
     : { foo: 'bar ' + model.field }
 
   const secret = encryptSecret(decoded)
 
-  model.field += 1
+  if (increment) {
+    model.field += 1
+  }
 
   return {
     ...input,
