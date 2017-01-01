@@ -21,16 +21,6 @@ export const validate = validateAndLog({
         topic: {type: 'string'},
       },
     },
-    data: {
-      properties: {
-        meta: {
-          properties: {
-            sessionId: {type: 'number'},
-          },
-        },
-        KA: {type: 'boolean'},
-      },
-    },
   },
 }, log)
 
