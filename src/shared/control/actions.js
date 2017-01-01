@@ -7,7 +7,7 @@ const log = logConsole(logName)
 export const validate = validateAndLog({
   properties: {
     action: {
-      enum: ['incrementField'],
+      enum: ['incrementField', 'userSession'],
     },
   },
 }, log)
@@ -15,6 +15,9 @@ export const validate = validateAndLog({
 const actions = {
   incrementField (increment = 1) {
     return {increment}
+  },
+  userSession (userName) {
+    return {userName}
   },
 }
 

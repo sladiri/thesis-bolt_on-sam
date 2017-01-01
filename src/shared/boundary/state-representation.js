@@ -50,9 +50,8 @@ const fields = (model) =>
 const userButton = (model) =>
   h('button', {
     onclick () {
-      actionSink('session', {
-        loginInput: document.querySelector('#loginUserName').value,
-      })
+      const input = document.querySelector('#loginUserName')
+      actionSink('userSession', input && input.value || null)
     },
   }, model.userName ? `Log Out ${model.userName}` : 'Log In')
 
