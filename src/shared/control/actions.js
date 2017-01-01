@@ -25,7 +25,10 @@ const actions = {
 export function onAction (input) {
   const {action, arg} = input
   return action
-    ? {...input, ...actions[action](arg)}
+    ? {
+      ...input,
+      ...actions[action](arg),
+    }
     : input
 }
 
