@@ -28,8 +28,8 @@ export const validate = validateAndLog({
             sessionId: {type: 'number'},
           },
         },
+        KA: {type: 'boolean'},
       },
-      KA: {type: 'boolean'},
     },
   },
 }, log)
@@ -98,16 +98,16 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
 
 export function toBusAdapter ({sinks, logTag}) {
   const adapterLog = logConsole(logName, 'toBusAdapter', logTag)
-  return function messageHandler (payload) {
-    const [ok, message] = validate(payload)
+  return function messageHandler (message) {
+    const [ok, errorMessage] = validate(message)
     if (!ok) {
       adapterLog('invalid json schema of message')
-      throw new Error(JSON.stringify(message))
+      throw new Error(JSON.stringify(errorMessage))
     }
 
-    const target = payload.envelope.topic
+    const target = message.envelope.topic
     const sink = sinks[target] = sinks[target] || getSink({targets: [target], logTag})
-    sink(payload.data)
+    sink(message.data)
     adapterLog('publish message with sessionId')
   }
 }

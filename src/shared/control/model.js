@@ -16,11 +16,24 @@ export const validate = validateAndLog({
   },
 }, log)
 
-const model = {
-  field: 42,
+const db = {
+  groups: [
+    {name: 'admin', members: ['anton']},
+    {name: 'group-A', members: ['berta', 'caesar', 'dora']},
+  ],
+  users: ['anton', 'berta', 'caesar', 'dora'],
 }
 
-export function onPropose ({meta}) {
+const model = {
+  field: 42,
+  userName: null,
+}
+
+/**
+ * Maintains data integrity
+ */
+export function onPropose (input) {
+  const {meta} = input
   const decoded = meta.secret
     ? decryptSecret(meta.secret)
     : { foo: 'bar ' + model.field }
@@ -30,8 +43,12 @@ export function onPropose ({meta}) {
   model.field += 1
 
   return {
-    meta: {...meta, secret},
-    model: {...model, id: meta.sessionId},
+    ...input,
+    model: {
+      ...model,
+      secret,
+      id: meta.sessionId,
+    },
   }
 }
 
@@ -40,5 +57,5 @@ export default {
   logTag: logName,
   validate,
   handler: onPropose,
-  targets: ['stateRepresentation'],
+  targets: ['state'],
 }

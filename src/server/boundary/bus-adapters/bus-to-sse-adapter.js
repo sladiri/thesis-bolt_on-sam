@@ -8,7 +8,7 @@ const logName = 'bus-to-sse-adapter'
 const log = logConsole(logName)
 
 const filterById = session => message => session.id === message.data.meta.sessionId
-const sanitiseMessage = message => dissocPath(['data', 'meta', 'sessionId'], message)
+const sanitiseMessage = message => dissocPath(['data', 'meta'], message)
 const busToSseData = message => `data: ${JSON.stringify(message)}\n\n`
 
 const aliveMessage = () => `data: ${JSON.stringify({KA: true})}\n\n`

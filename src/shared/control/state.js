@@ -1,7 +1,7 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
 
-const logName = 'actions'
+const logName = 'state'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
@@ -16,17 +16,17 @@ export const validate = validateAndLog({
 }, log)
 
 /**
- * - Context specifiic logic (eg. set default value)
- * - Calls external API (eg. validation service)
-*/
-export function onAction (input) {
+ * - Calculate application state
+ * - A pure and stateless function
+ */
+export function onState (input) {
   return input
 }
 
 export default {
-  topics: ['actions'],
+  topics: ['state'],
   logTag: logName,
   validate,
-  handler: onAction,
-  targets: ['propose'],
+  handler: onState,
+  targets: ['stateRepresentation'],
 }
