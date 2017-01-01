@@ -2,7 +2,7 @@ import {logConsole} from './logger'
 import postal from 'postal/lib/postal.lodash'
 import flyd from 'flyd'
 import filter from 'flyd/module/filter'
-import {prop, pipe, when, head} from 'ramda'
+import {prop, pipe, when, curry} from 'ramda'
 import validateAndLog from './json-schema'
 
 const channel = 't_bo-sam'
@@ -75,11 +75,21 @@ export function getSink ({targets, logTag}) {
   return stream
 }
 
+const validateAndThrow = curry((adapterLog, validate, message) => {
+  const [ok, errorMessage] = validate(message)
+  if (!ok) {
+    adapterLog('invalid json schema of message')
+    throw new Error(errorMessage)
+  }
+  return true
+})
+
 export function connect ({topics, logTag, validate, handler, targets = []}) {
   const {subs, source} = getSource({topics, logTag})
+  const connectLog = logConsole(logName, 'connect', logTag)
   const stream = pipe(
     flyd.map(prop('data')),
-    flyd.map(when(pipe(validate, head), handler)),
+    flyd.map(when(validateAndThrow(connectLog, validate), handler)),
   )(source)
   setSink({targets, stream, logTag})
   flyd.on(unsubscribe(topics, logTag, targets, subs), stream.end)
@@ -89,12 +99,7 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
 export function toBusAdapter ({sinks, logTag}) {
   const adapterLog = logConsole(logName, 'toBusAdapter', logTag)
   return function messageHandler (message) {
-    const [ok, errorMessage] = validate(message)
-    if (!ok) {
-      adapterLog('invalid json schema of message')
-      throw new Error(JSON.stringify(errorMessage))
-    }
-
+    validateAndThrow(adapterLog, validate, message)
     const target = message.envelope.topic
     const sink = sinks[target] = sinks[target] || getSink({targets: [target], logTag})
     sink(message.data)

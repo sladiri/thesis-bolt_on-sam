@@ -25,7 +25,7 @@ export default async function httpToBusAdapter (ctx) {
   } catch ({message}) {
     log(message)
     ctx.status = 400
-    ctx.body = {message}
+    ctx.body = {message: 'Invalid HTTP charset parameter.'}
     return
   }
 
@@ -48,13 +48,21 @@ export default async function httpToBusAdapter (ctx) {
   } catch ({message}) {
     log(message)
     ctx.status = 400
+    ctx.body = {message: 'Invalid JSON in body.'}
+    return
+  }
+
+  try {
+    pipe(
+      assocPath(['data', 'meta', 'sessionId'], sessionId),
+      toBusAdapter({sinks: {}, logTag: logName}),
+    )(data)
+  } catch ({message}) {
+    log(message)
+    ctx.status = 400
     ctx.body = {message}
     return
   }
-  pipe(
-    assocPath(['data', 'meta', 'sessionId'], sessionId),
-    toBusAdapter({sinks: {}, logTag: logName}),
-  )(data)
   ctx.status = 200
   log(`got request body from ${sessionId}`)
 }
