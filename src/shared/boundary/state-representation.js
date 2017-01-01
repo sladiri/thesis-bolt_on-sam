@@ -8,9 +8,9 @@ const logName = 'stateRepresentation'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
-  required: ['model'],
+  required: ['view', 'model'],
   properties: {
-    meta: {type: 'object'},
+    view: {type: 'string'},
     model: {
       required: ['field'],
       properties: {
@@ -80,8 +80,7 @@ const views = {
   },
 }
 
-export default function stateRepresentation (input) {
-  const {model} = input
-  const view = views.initial(model)
-  return view
+export default (input) => {
+  const {view, model} = input
+  return views[view](model)
 }

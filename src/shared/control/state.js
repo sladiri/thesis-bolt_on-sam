@@ -20,7 +20,10 @@ export const validate = validateAndLog({
  * - A pure and stateless function
  */
 export function onState (input) {
-  return input
+  return {
+    ...input,
+    view: 'initial',
+  }
 }
 
 export default {
