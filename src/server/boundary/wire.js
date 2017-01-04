@@ -1,6 +1,5 @@
 import Koa from 'koa'
 import convert from 'koa-convert'
-import compose from 'koa-compose'
 
 import prettyJSON from 'koa-json'
 import errorHandler from './request-error-handler'
@@ -13,14 +12,13 @@ import serveFiles from './routes/serve-files'
 
 import * as test from './routes/test'
 
-import {sessionKeys, setupSession} from './session'
-
 import busToSse from './bus-adapters/bus-to-sse-adapter'
 import httpToBus from './bus-adapters/http-to-bus-adapter'
 
-import {connect} from '../../shared/boundary/connect-postal'
 import createServer from './server'
-import actionOptions from '../../shared/control/actions'
+
+import {connect} from '../../shared/boundary/connect-postal'
+import actionOptions from '../../shared/boundary/actions'
 import modelOptions from '../../shared/control/model'
 import stateOptions from '../../shared/control/state'
 import renderStringOptions, {renderString} from './routes/render-string'
@@ -38,12 +36,18 @@ function createApp () {
     app.use(mount(`/test/${key}`, test[key]))
   })
 
-  app.keys = sessionKeys
-  app.use(convert(session(app)))
+  app.keys = ['secret']
+  app.use(convert(session({
+    key: 't-bos:sess', /** (string) cookie key (default is koa:sess) */
+    maxAge: 1000 * 60 * 1, /** (number) maxAge in ms (default is 1 days) */
+    overwrite: true, /** (boolean) can overwrite or not (default true) */
+    httpOnly: true, /** (boolean) httpOnly or not (default true) */
+    signed: true, /** (boolean) signed or not (default true) */
+  }, app)))
 
-  app.use(mount('/sse', busToSse(['stateRepresentation'])))
+  app.use(mount('/sse', busToSse(['state'])))
   app.use(mount('/actions', httpToBus))
-  app.use(mount(compose([setupSession, renderString])))
+  app.use(mount(renderString))
 
   return app
 }

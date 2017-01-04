@@ -8,17 +8,17 @@ const logName = 'stateRepresentation'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
-  required: ['view', 'model'],
-  properties: {
-    view: {type: 'string'},
-    model: {
-      required: ['field', 'id', 'userName'],
-      properties: {
-        field: {type: 'number'},
-        userName: {oneOf: [{type: 'string'}, {type: 'null'}]},
-      },
-    },
-  },
+  // required: ['view', 'stuff'],
+  // properties: {
+  //   view: {type: 'string'},
+  //   stuff: {
+  //     // required: ['session', 'field', 'id', 'userName'],
+  //     properties: {
+  //       field: {type: 'number'},
+  //       userName: {oneOf: [{type: 'string'}, {type: 'null'}]},
+  //     },
+  //   },
+  // },
 }, log)
 
 const numbers = range(1, 12).map(x => Math.random())
@@ -30,55 +30,55 @@ const list = () =>
     return h('p.row', numbers[i])
   }))
 
-const actionSink = (action, arg) =>
-  getSink({targets: ['actions'], logTag: logName})({action, arg})
+const actionSink = (action, arg, options) =>
+  getSink({targets: ['actions'], logTag: logName})({action, arg, ...options})
 
-const incrementButton = (disabled) =>
+const incrementButton = (stuff, token, disabled) =>
   h('button', {
-    onclick () { actionSink('incrementField') },
+    onclick () { actionSink('incrementField', undefined, {token}) },
     disabled,
   }, 'increment field')
 
-const fields = (model) =>
+const fields = (stuff, token) =>
   h('p.fields', [
-    h('h2', 'model fields'),
-    h('p', [h('span', 'field: '), h('span', model.field)]),
-    h('p', [h('span', 'id: '), h('span', model.id)]),
-    incrementButton(),
+    h('p', [h('span', 'token: '), h('span', token || 'no token')]),
+    h('p', [h('span', 'streamID: '), h('span', stuff.streamID || 'no streamID')]),
+    h('p', [h('span', 'field: '), h('span', stuff.field)]),
+    incrementButton(stuff, token),
   ])
 
-const userButton = (model) =>
+const userButton = (stuff, token) =>
   h('button', {
     onclick () {
       const input = document.querySelector('#loginUserName')
-      actionSink('userSession', input && input.value || null)
+      actionSink('userSession', input && input.value || null, {token})
     },
-  }, model.userName ? `Log Out ${model.userName}` : 'Log In')
+  }, stuff.userName ? `Log Out ${stuff.userName}` : 'Log In')
 
-const user = (model) => {
-  const {userName} = model
+const user = (stuff, token) => {
+  const {userName} = stuff
   return h('p.user', [
     h('h2', 'User'),
     userName
       ? h('p', [h('span', 'User Name: '), h('span', userName)])
       : h('p', [h('input#loginUserName', {placeholder: 'Enter User Name'})]),
-    userButton(model),
+    userButton(stuff, token),
   ])
 }
 
 const root = children => h('div#state-representation', children)
 
 const views = {
-  initial (model) {
+  initial (stuff, token) {
     return root([
-      user(model),
-      fields(model),
+      user(stuff, token),
+      fields(stuff, token),
       list(),
     ])
   },
 }
 
 export default (input) => {
-  const {view, model} = input
-  return views[view](model)
+  const {view, stuff, token} = input
+  return views[view](stuff, token)
 }

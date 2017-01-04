@@ -5,7 +5,7 @@ import filter from 'flyd/module/filter'
 import {prop, pipe, when, curry} from 'ramda'
 import validateAndLog from './json-schema'
 
-const channel = 't_bo-sam'
+export const busChannel = 't_bo-sam'
 
 const logName = 'connect-postal'
 const log = logConsole(logName)
@@ -35,7 +35,7 @@ const subscribe = (stream, logTag) => {
     }, stream)
 
     return postal.subscribe({
-      channel,
+      busChannel,
       topic,
       callback: function busToStreamHandler (data, envelope) {
         stream({data, envelope})
@@ -49,7 +49,7 @@ const publish = (targets, logTag) => function publishHandler (data) {
   publishLog('about to publish data to targets', targets)
   targets.forEach(topic => {
     publishLog(`publishing data to [${topic}]`)
-    postal.publish({channel, topic, data})
+    postal.publish({busChannel, topic, data})
   })
 }
 

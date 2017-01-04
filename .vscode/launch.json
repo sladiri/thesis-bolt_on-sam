@@ -22,6 +22,17 @@
       "port": 5858,
       "sourceMaps": true,
       "outFiles": []
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "nolog:server",
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["run-script", "debug:server:nolog"],
+      "port": 5858,
+      "sourceMaps": true,
+      "outFiles": []
     }
   ]
 }

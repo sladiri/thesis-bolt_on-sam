@@ -16,6 +16,7 @@
     "build": "npm run build:shared && npm run build:server",
     "lint": "eslint src",
     "debug:server": "cross-env DEBUG=TBO:* babel-node --nolazy --debug src/server/boundary/index.js",
+    "debug:server:nolog": "babel-node --nolazy --debug src/server/boundary/index.js",
     "start:dev": "cross-env DEBUG=TBO:* babel-node src/server/boundary/index.js",
     "start": "cross-env DEBUG=TBO:* node dist/server/boundary/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"

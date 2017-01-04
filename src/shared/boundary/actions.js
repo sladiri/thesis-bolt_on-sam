@@ -1,5 +1,6 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
+import jwt from 'jsonwebtoken'
 
 const logName = 'actions'
 const log = logConsole(logName)
@@ -7,12 +8,15 @@ const log = logConsole(logName)
 export const validate = validateAndLog({
   properties: {
     action: {
-      enum: ['incrementField', 'userSession'],
+      enum: ['init', 'incrementField', 'userSession'],
     },
   },
 }, log)
 
 const actions = {
+  init (arg) {
+    return {init: arg}
+  },
   incrementField (increment = 1) {
     return {increment}
   },
@@ -26,13 +30,22 @@ const actions = {
  * - Calls external API (eg. validation service)
 */
 export function onAction (input) {
-  const {action, arg} = input
-  return action
-    ? {
-      ...input,
-      ...actions[action](arg),
-    }
-    : input
+  if (input.action === 'init' && input.arg === 'server') {
+    return {...actions[input.action](input.arg)}
+  }
+  let token = {}
+  try {
+    token = input.token
+      ? jwt.verify(input.token, 'secret')
+      : token
+  } catch ({message}) {
+    log('token error', message)
+    token = {...token, expired: true}
+  }
+  return {
+    ...actions[input.action](input.arg),
+    token,
+  }
 }
 
 export default {

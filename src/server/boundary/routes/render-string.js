@@ -5,6 +5,7 @@ import takeUntil from 'flyd/module/takeuntil'
 import {pipe} from 'ramda'
 import stateRepresentation, {validate} from '../../../shared/boundary/state-representation'
 import {getSink} from '../../../shared/boundary/connect-postal'
+import jwt from 'jsonwebtoken'
 
 const logName = 'render-index'
 const log = logConsole(logName)
@@ -35,17 +36,16 @@ export async function renderString (ctx) {
   let killer = flyd.stream()
   let stream = takeUntil(index, killer)
   flyd.on(view => {
+    ctx.session.clientInitToken = jwt.sign({
+      clientInitID: `${Math.random().toString(36).substr(2, 16)}`,
+    }, 'secret', {expiresIn: '120s'})
     ctx.body = view
     killer(true)
     killer = undefined
     stream = undefined
   }, stream)
 
-  actionSink({
-    meta: {
-      sessionId: ctx.session.id,
-    },
-  })
+  actionSink({action: 'init', arg: 'server'})
 }
 
 export function onStateRepresentation (input) {

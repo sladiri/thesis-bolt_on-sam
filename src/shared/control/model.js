@@ -5,14 +5,6 @@ const logName = 'model'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
-  required: ['meta'],
-  properties: {
-    meta: {
-      properties: {
-        secret: {type: 'string'},
-      },
-    },
-  },
 }, log)
 
 const db = {
@@ -23,32 +15,54 @@ const db = {
   users: ['anton', 'berta', 'caesar', 'dora'],
 }
 
-const model = {
+const stuff = {
   field: 42,
-  userName: null,
 }
+
+const clone = obj => JSON.parse(JSON.stringify(obj))
 
 /**
  * Maintains data integrity
  */
 export function onPropose (input) {
-  if (input.increment) {
-    model.field += 1
+  console.log('mmm')
+  const {token} = input
+
+  if (input.init === 'server') {
+    return {...input, stuff: clone(stuff)}
+  } else if (input.init !== undefined) {
+    token.private = token.private || {} // move?
+    token.streamID = input.init
+    token.private[input.init] = input.init
+  } else if (input.init === undefined && token.streamID === undefined) {
+    debugger
+    console.log('Invalid client. TODO: Handle errors inside flyd stream.')
   }
 
-  if (input.userName === null) {
-    model.userName = input.userName
+  const meta = {}
+
+  // debugger
+  if (token.expired) {
+    console.log('mmmmmmmmmm reset expired session')
+    delete token.userName
+    delete token.expired
+  } else {
+    console.log('mmmmmmmmmm yes token')
+    if (input.increment) {
+      // throw new Error('sladi err')
+      stuff.field += 1
+      meta.broadcast = true
+    } else if (input.userName === null || db.users.includes(input.userName)) {
+      token.userName = input.userName
+      token.private[input.init].userName = input.userName
+    }
   }
-  if (db.users.includes(input.userName)) {
-    model.userName = input.userName
-  }
+  // debugger
 
   return {
-    ...input,
-    model: {
-      ...model,
-      id: input.meta.sessionId,
-    },
+    token,
+    meta,
+    stuff: clone(stuff),
   }
 }
 
