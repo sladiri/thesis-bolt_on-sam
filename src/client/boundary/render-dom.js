@@ -2,6 +2,7 @@ import {logConsole} from '../../shared/boundary/logger'
 import {render} from 'inferno-dom'
 import {__, curry, pipe} from 'ramda'
 import stateRepresentation, {validate} from '../../shared/boundary/state-representation'
+import {getSink} from '../../shared/boundary/connect-postal'
 
 const logName = 'render-dom'
 const log = logConsole(logName)
@@ -23,3 +24,7 @@ export default {
   validate,
   handler: onStateRepresentation,
 }
+
+setTimeout(() => {
+  getSink({targets: ['actions'], logTag: 'client-wire'})({action: 'init'})
+}, 0)
