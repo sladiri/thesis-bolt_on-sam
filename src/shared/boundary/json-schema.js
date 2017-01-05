@@ -18,7 +18,7 @@ export default (schema, logger = log) => {
       ok
         ? undefined
         : do{
-          logger('schema error', JSON.stringify(validate.errors))
+          logger('schema error', JSON.stringify(validate.errors), JSON.stringify(input))
           validate.errors
         },
     ]
