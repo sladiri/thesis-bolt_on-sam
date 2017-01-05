@@ -94,7 +94,6 @@ export function toBusAdapter ({sinks, logTag}) {
   return function messageHandler (message) {
     if (isValid(validate)) {
       const target = message.envelope.topic
-      // TODO: Validate with proper function.
       const sink = sinks[target] = sinks[target] || getSink({targets: [target], logTag})
       sink(message.data)
     }
