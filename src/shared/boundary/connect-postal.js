@@ -79,8 +79,7 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
     ::_do(input => { savedInput = input })
     ::map(handler)
     ::_catch(error => {
-      connectLog('Error', `${topics} -> ${logTag} -> ${targets}`, error)
-      console.log('error in handler, sending', {...savedInput, error})
+      connectLog('Error, restore stream', `${topics} -> ${logTag} -> ${targets}`, error)
       getSink({targets, logTag})({...savedInput, error})
       return stream
     })
