@@ -61,16 +61,17 @@ SystemJS.config({
     "crypto": "npm:jspm-nodelibs-crypto@0.2.0",
     "debug": "npm:debug@2.3.3",
     "events": "npm:jspm-nodelibs-events@0.2.0",
-    "flyd": "npm:flyd@0.2.2",
     "fs": "npm:jspm-nodelibs-fs@0.2.0",
     "inferno": "npm:inferno@0.7.27",
     "inferno-dom": "npm:inferno-dom@0.7.27",
     "inferno-hyperscript": "npm:inferno-hyperscript@2.0.3",
+    "module": "npm:jspm-nodelibs-module@0.2.0",
     "os": "npm:jspm-nodelibs-os@0.2.0",
     "path": "npm:jspm-nodelibs-path@0.2.1",
     "postal": "npm:postal@2.0.5",
     "process": "npm:jspm-nodelibs-process@0.2.0",
     "ramda": "npm:ramda@0.23.0",
+    "rxjs": "npm:rxjs@5.0.2",
     "stream": "npm:jspm-nodelibs-stream@0.2.0",
     "string_decoder": "npm:jspm-nodelibs-string_decoder@0.2.0",
     "url": "npm:jspm-nodelibs-url@0.2.0",
@@ -430,11 +431,6 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.3"
       }
     },
-    "npm:flyd@0.2.2": {
-      "map": {
-        "ramda": "npm:ramda@0.19.1"
-      }
-    },
     "npm:ajv@5.0.0-beta.1": {
       "map": {
         "co": "npm:co@4.6.0",
@@ -508,6 +504,11 @@ SystemJS.config({
     "npm:min-document@2.19.0": {
       "map": {
         "dom-walk": "npm:dom-walk@0.1.1"
+      }
+    },
+    "npm:rxjs@5.0.2": {
+      "map": {
+        "symbol-observable": "npm:symbol-observable@1.0.4"
       }
     }
   }

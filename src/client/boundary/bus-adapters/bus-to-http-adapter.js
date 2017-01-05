@@ -1,7 +1,7 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import {getSource} from '../../../shared/boundary/connect-postal'
-import flyd from 'flyd'
-import {pipe} from 'ramda'
+import {map} from 'rxjs/operator/map'
+import {_catch} from 'rxjs/operator/catch'
 
 const logName = 'bus-to-http-adapter'
 const log = logConsole(logName)
@@ -29,9 +29,9 @@ export default function busToHttpAdapter ({url, targets}) {
       .catch(log)
   }
 
-  const {source} = getSource({topics: targets, logTag: logName})
-  pipe(
-    flyd.map(busToBody),
-    flyd.on(sendHttp),
-  )(source)
+  let {subs, source} = getSource({topics: targets, logTag: logName})
+  source
+    ::map(busToBody)
+    ::_catch(error => { console.log('error', logName, error) })
+    .subscribe(sendHttp)
 }

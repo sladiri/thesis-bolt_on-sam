@@ -1,8 +1,11 @@
 import {logConsole} from './logger'
 import postal from 'postal/lib/postal.lodash'
-import flyd from 'flyd'
-import filter from 'flyd/module/filter'
-import {prop, pipe, when, curry} from 'ramda'
+import {Subject} from 'rxjs/Subject'
+import {map} from 'rxjs/operator/map'
+import {filter} from 'rxjs/operator/filter'
+import {_do} from 'rxjs/operator/do'
+import {_catch} from 'rxjs/operator/catch'
+import {prop, curry, when} from 'ramda'
 import validateAndLog from './json-schema'
 
 export const busChannel = 't_bo-sam'
@@ -26,19 +29,19 @@ export const validate = validateAndLog({
 
 function hasData (data) { return data !== undefined }
 
-const subscribe = (stream, logTag) => {
+const subscribe = ({sink, logTag}) => {
   const subscribeLog = logConsole(logName, logTag)
   return function subscribeHandler (topic) {
     subscribeLog('subscription set source to topics', topic)
-    flyd.on(function logBusToStreamHandler (message) {
-      subscribeLog(`subscription got message on [${topic}]`)
-    }, stream)
 
     return postal.subscribe({
       busChannel,
       topic,
       callback: function busToStreamHandler (data, envelope) {
-        stream({data, envelope})
+        sink
+          ::_do(() => { subscribeLog(`subscription got message on [${topic}]`) })
+          ::_catch(error => { console.log('subscribe got error', logTag, error); debugger })
+          .next({data, envelope})
       },
     })
   }
@@ -46,7 +49,6 @@ const subscribe = (stream, logTag) => {
 
 const publish = (targets, logTag) => function publishHandler (data) {
   const publishLog = logConsole(logName, logTag)
-  publishLog('about to publish data to targets', targets)
   targets.forEach(topic => {
     publishLog(`publishing data to [${topic}]`)
     postal.publish({busChannel, topic, data})
@@ -58,21 +60,39 @@ const unsubscribe = (topics, logTag, targets, subs) => function unsubscribeHandl
   subs.forEach(sub => { sub.unsubscribe() })
 }
 
-const setSink = ({targets, stream, logTag}) => {
-  stream = filter(hasData, stream)
-  flyd.on(publish(targets, logTag), stream)
-}
+// const setSink = ({targets, logTag, pipe}) => {
+//   return pipe
+//     ::filter(hasData)
+//     ::_do(publish(targets, logTag))
+//     ::_catch(error => { console.log('setSink got error', logTag, error); debugger })
+// }
+
+// function getPipe ({topics, logTag}) {
+//   const pipe = new Subject() // keep this subject
+//   const subs = topics.map(subscribe({pipe, logTag}))
+//   return {subs, pipe}
+// }
 
 export function getSource ({topics, logTag}) {
-  const stream = filter(hasData, flyd.stream())
-  const subs = topics.map(subscribe(stream, logTag))
-  return {subs, source: stream}
+  // const {subs, pipe} = getPipe({topics, logTag})
+
+  const sink = new Subject() // keep this subject
+  const subs = topics.map(subscribe({sink, logTag}))
+  return {
+    subs,
+    source: sink.asObservable()
+      ::_catch(error => { console.log('getSource got error', logTag, error); debugger }),
+  }
 }
 
 export function getSink ({targets, logTag}) {
-  const stream = flyd.stream()
-  setSink({targets, logTag, stream})
-  return stream
+  return when(hasData, publish(targets, logTag))
+
+  // const sink = setSink({targets, logTag, pipe: new Subject()})
+  //   ::_catch(error => { console.log('getSink got error', logTag, error); debugger })
+
+  // sink.subscribe()
+  // return ::sink.next
 }
 
 const validateAndThrow = curry((adapterLog, validate, message) => {
@@ -85,15 +105,30 @@ const validateAndThrow = curry((adapterLog, validate, message) => {
 })
 
 export function connect ({topics, logTag, validate, handler, targets = []}) {
-  const {subs, source} = getSource({topics, logTag})
   const connectLog = logConsole(logName, 'connect', logTag)
-  const stream = pipe(
-    flyd.map(prop('data')),
-    flyd.map(when(validateAndThrow(connectLog, validate), handler)),
-  )(source)
-  setSink({targets, stream, logTag})
-  flyd.on(unsubscribe(topics, logTag, targets, subs), stream.end)
-  return stream
+  const {subs, source} = getSource({topics, logTag})
+
+  return source
+    ::map(prop('data'))
+    ::filter(validateAndThrow(connectLog, validate))
+    ::map(handler)
+    // ::_catch(error => {
+    //   console.log('connect got error', logTag, targets, error)
+    //   debugger
+    //   // unsubscribe(topics, logTag, targets, subs)
+    // })
+    ::map(getSink({targets, logTag}))
+    .subscribe()
+
+  // const pipe = source
+  //   ::map(prop('data'))
+  //   ::filter(validateAndThrow(connectLog, validate))
+  //   ::map(handler)
+  //   ::_catch(error => { console.log('connect1 got error', logTag, error); debugger })
+
+  // return setSink({targets, logTag, pipe})
+  //   ::_catch(error => { console.log('connect2 got error', logTag, error); debugger })
+  //   .subscribe() // just return sink?
 }
 
 export function toBusAdapter ({sinks, logTag}) {
@@ -103,6 +138,5 @@ export function toBusAdapter ({sinks, logTag}) {
     const target = message.envelope.topic
     const sink = sinks[target] = sinks[target] || getSink({targets: [target], logTag})
     sink(message.data)
-    adapterLog('publish message with sessionId')
   }
 }

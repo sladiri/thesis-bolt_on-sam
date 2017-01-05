@@ -20,7 +20,8 @@ export const validate = validateAndLog({
  * - A pure and stateless function
  */
 export function state (input) {
-  // debugger
+  // throw new Error('sladi state')
+
   const {stuff, token} = input
   if (stuff && token) {
     stuff.userName = token.userName

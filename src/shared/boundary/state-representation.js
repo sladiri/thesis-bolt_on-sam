@@ -79,6 +79,8 @@ const views = {
 }
 
 export default (input) => {
+  // throw new Error('sladi state-rep')
+
   const {view, stuff, token} = input
   return views[view](stuff, token)
 }

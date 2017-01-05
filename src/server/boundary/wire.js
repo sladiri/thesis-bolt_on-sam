@@ -1,3 +1,5 @@
+import {logConsole} from '../../shared/boundary/logger'
+
 import Koa from 'koa'
 import convert from 'koa-convert'
 
@@ -22,6 +24,9 @@ import actionOptions from '../../shared/boundary/actions'
 import modelOptions from '../../shared/control/model'
 import stateOptions from '../../shared/control/state'
 import renderStringOptions, {renderString} from './routes/render-string'
+
+const logName = 'wire-server'
+const log = logConsole(logName)
 
 function createApp () {
   const app = new Koa()
@@ -53,6 +58,8 @@ function createApp () {
 }
 
 createServer(createApp().callback(), () => {
+  log('Server ready.')
+
   connect(renderStringOptions)
   connect(stateOptions)
   connect(modelOptions)

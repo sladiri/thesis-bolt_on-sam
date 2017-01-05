@@ -71,12 +71,11 @@ export default async function httpToBusAdapter (ctx) {
 
   try {
     toBusAdapter({sinks: {}, logTag: logName})(data)
-  } catch ({message}) {
-    userErrorLog(message)
-    ctx.status = 400
-    ctx.body = {message}
-    return
+  } catch (error) {
+    debugger
+    throw error
   }
+
   ctx.status = 200
   log('got action request body')
 }

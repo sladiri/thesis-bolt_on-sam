@@ -1,11 +1,14 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import validateAndLog from '../../../shared/boundary/json-schema'
 import {PassThrough} from 'stream'
-import flyd from 'flyd'
 import {pipe, assocPath, path, when, prop} from 'ramda'
 import {getSource, busChannel} from '../../../shared/boundary/connect-postal'
 import jwt from 'jsonwebtoken'
 import {state} from '../../../shared/control/state'
+import {map} from 'rxjs/operator/map'
+import {filter} from 'rxjs/operator/filter'
+import {_do} from 'rxjs/operator/do'
+import {_catch} from 'rxjs/operator/catch'
 
 const logName = 'bus-to-sse-adapter'
 const log = logConsole(logName)
@@ -28,13 +31,13 @@ const getTokenStreamID = pipe(getToken, path(['streamID']))
 
 const saveTokenByID = (streams, id) => message => {
   if (getTokenStreamID(message) === id) {
-    streams[id].token = getToken(message)
+    streams[id] = getToken(message)
   }
   return message
 }
 
-const restoreTokenByID = saved => message => {
-  return assocPath(['token'], saved.token, message)
+const restoreTokenByID = (streams, id) => message => {
+  return assocPath(['token'], streams[id], message)
 }
 
 const filterByID = id => message => {
@@ -70,8 +73,6 @@ const busToSseData = message => `data: ${JSON.stringify(message)}\n\n`
 const streams = {}
 
 export default topics => {
-  const {source} = getSource({topics, logTag: logName})
-
   return async function busToSseAdapter (ctx) {
     let token
     try {
@@ -90,38 +91,24 @@ export default topics => {
       ctx.body = {message}
       return
     }
-    streams[clientInitID] = {}
+    streams[clientInitID] = token
+    console.log(`added stream [id=${clientInitID}] - ${Object.keys(streams).length} streams active`)
 
     const socketStream = new PassThrough()
-    streams[clientInitID].socketStream = socketStream
 
-    // const stream = pipe(
-    //   flyd.map(addSseID(streamID)),
-    //   filter(allPass([validate, filterSseID(streamID)])),
-    //   flyd.map(sanitise),
-    //   flyd.map(busToSseData),
-    //   flyd.on(::socketStream.write)
-    // )(source)
-
-    const stream = flyd.on(
-      pipe(
-        when(path(['envelope']), prop('data')),
-        saveTokenByID(streams, clientInitID),
-        when(
-          filterByID(clientInitID),
-          pipe(
-            when(getBroadcast, restoreTokenByID(streams[clientInitID])),
-            state,
-            signToken,
-            fakePostalMessage,
-            when(validate, pipe(busToSseData, ::socketStream.write)),
-          )
-        ),
-      ),
-      source)
-    streams[clientInitID].stream = stream
-
-    console.log(`added stream [id=${clientInitID}] - ${Object.keys(streams).length} streams active`)
+    const {subs, source} = getSource({topics, logTag: logName})
+    const sub = source
+      ::map(when(path(['envelope']), prop('data')))
+      ::_do(saveTokenByID(streams, clientInitID))
+      ::filter(filterByID(clientInitID))
+      ::map(when(getBroadcast, restoreTokenByID(streams, clientInitID)))
+      ::map(state)
+      ::map(signToken)
+      ::map(fakePostalMessage)
+      ::filter(validate)
+      ::map(busToSseData)
+      ::_catch(error => { console.log('bus2sse error', logName, error); debugger })
+      .subscribe(::socketStream.write)
 
     const {socket} = ctx
     const keepaliveInterval = 1000 * 60 * 5
@@ -133,9 +120,14 @@ export default topics => {
     ctx.res.socket.setTimeout(keepaliveInterval * 2)
     const onClose = what => {
       return function onCloseHandler (message) {
-        stream.end(true)
+        if (what === 'close') {
+          socket.removeAllListeners('error')
+          socket.on('error', () => { log(`already socket closed for stream [id=${clientInitID}]`) })
+        }
         clearInterval(keepalive)
+        sub.unsubscribe()
         socket.removeListener(what, onCloseHandler)
+        streams[clientInitID] = undefined
         delete streams[clientInitID]
         console.log(`removed stream [id=${clientInitID}] - ${Object.keys(streams).length} streams active`)
         log(`socket closed for stream [id=${clientInitID}]`, what, message)

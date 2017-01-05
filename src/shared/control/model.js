@@ -28,12 +28,10 @@ export function onPropose (input) {
   console.log('mmm')
   const {token} = input
 
-  if (input.init === 'server') {
+  if (input.init && input.init.server === true) {
     return {...input, stuff: clone(stuff)}
   } else if (input.init !== undefined) {
-    token.private = token.private || {} // move?
     token.streamID = input.init
-    token.private[input.init] = input.init
   } else if (input.init === undefined && token.streamID === undefined) {
     debugger
     console.log('Invalid client. TODO: Handle errors inside flyd stream.')
@@ -41,7 +39,6 @@ export function onPropose (input) {
 
   const meta = {}
 
-  // debugger
   if (token.expired) {
     console.log('mmmmmmmmmm reset expired session')
     delete token.userName
@@ -49,15 +46,13 @@ export function onPropose (input) {
   } else {
     console.log('mmmmmmmmmm yes token')
     if (input.increment) {
-      // throw new Error('sladi err')
+      // throw new Error('sladi model')
       stuff.field += 1
       meta.broadcast = true
     } else if (input.userName === null || db.users.includes(input.userName)) {
       token.userName = input.userName
-      token.private[input.init].userName = input.userName
     }
   }
-  // debugger
 
   return {
     token,

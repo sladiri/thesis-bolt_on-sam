@@ -9,7 +9,3 @@ sseToBus('/sse')
 busToHttp({url: '/actions', targets: ['actions']})
 
 getSink({targets: ['actions'], logTag: 'client-wire'})({action: 'init'})
-// const actionSink = getSink({targets: ['actions'], logTag: 'client-wire'})
-// setInterval(() => {
-//   actionSink({meta: {}})
-// }, 100)

@@ -30,7 +30,7 @@ const actions = {
  * - Calls external API (eg. validation service)
 */
 export function onAction (input) {
-  if (input.action === 'init' && input.arg === 'server') {
+  if (input.action === 'init' && input.arg.server === true) {
     return {...actions[input.action](input.arg)}
   }
   let token = {}

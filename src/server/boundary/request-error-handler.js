@@ -6,10 +6,10 @@ const log = logConsole(logName)
 export default async function errorHandler (ctx, next) {
   try {
     await next()
-  } catch ({status = 500, message, stack}) {
-    log('error', status, message, stack)
+  } catch ({status, message, stack}) {
+    log('error', status || 'no status', message, stack)
 
-    ctx.status = status
-    ctx.body = { message }
+    ctx.status = status || 500
+    ctx.body = 'Server Error.'
   }
 }
