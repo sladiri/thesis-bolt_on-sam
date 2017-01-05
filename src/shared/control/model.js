@@ -34,7 +34,7 @@ export function onPropose (input) {
     token.streamID = input.init
   } else if (input.init === undefined && token.streamID === undefined) {
     debugger
-    console.log('Invalid client. TODO: Handle errors inside flyd stream.')
+    console.log('Invalid client. TODO: Handle errors inside stream.')
   }
 
   const meta = {}
@@ -46,7 +46,7 @@ export function onPropose (input) {
   } else {
     console.log('mmmmmmmmmm yes token')
     if (input.increment) {
-      // throw new Error('sladi model')
+      throw new Error('sladi model')
       stuff.field += 1
       meta.broadcast = true
     } else if (input.userName === null || db.users.includes(input.userName)) {

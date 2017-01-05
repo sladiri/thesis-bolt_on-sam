@@ -69,11 +69,17 @@ const user = (stuff, token) => {
 const root = children => h('div#state-representation', children)
 
 const views = {
-  initial (stuff, token) {
+  initial ({stuff, token}) {
     return root([
       user(stuff, token),
       fields(stuff, token),
       list(),
+    ])
+  },
+  error ({message, stack}) {
+    return root([
+      h('p.err', message),
+      h('p.err', stack),
     ])
   },
 }
@@ -81,6 +87,6 @@ const views = {
 export default (input) => {
   // throw new Error('sladi state-rep')
 
-  const {view, stuff, token} = input
-  return views[view](stuff, token)
+  const {view, ...args} = input
+  return views[view](args)
 }

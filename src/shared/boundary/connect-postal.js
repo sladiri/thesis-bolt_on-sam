@@ -72,12 +72,16 @@ export function getSink ({targets, logTag}) {
 
 export function connect ({topics, logTag, validate, handler, targets = []}) {
   const connectLog = logConsole(logName, 'connect', logTag)
+  let savedInput
   const stream = getSource({topics, logTag}).source
     ::map(prop('data'))
     ::filter(isValid(validate))
+    ::_do(input => { savedInput = input })
     ::map(handler)
     ::_catch(error => {
       connectLog('Error', `${topics} -> ${logTag} -> ${targets}`, error)
+      console.log('error in handler, sending', {...savedInput, error})
+      getSink({targets, logTag})({...savedInput, error})
       return stream
     })
     ::map(getSink({targets, logTag}))
@@ -91,11 +95,14 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
 }
 
 export function toBusAdapter ({sinks, logTag}) {
+  const adpaterLog = logConsole(logName, 'toBusAdapter', logTag)
   return function messageHandler (message) {
     if (isValid(validate)) {
       const target = message.envelope.topic
       const sink = sinks[target] = sinks[target] || getSink({targets: [target], logTag})
       sink(message.data)
+    } else {
+      adpaterLog('Invalid data.')
     }
   }
 }

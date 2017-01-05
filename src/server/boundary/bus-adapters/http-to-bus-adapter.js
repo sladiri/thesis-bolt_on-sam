@@ -69,13 +69,7 @@ export default async function httpToBusAdapter (ctx) {
     delete session.clientInitToken
   }
 
-  try {
-    toBusAdapter({sinks: {}, logTag: logName})(data)
-  } catch (error) {
-    debugger
-    throw error
-  }
-
-  ctx.status = 200
   log('got action request body')
+  toBusAdapter({sinks: {}, logTag: logName})(data)
+  ctx.status = 200
 }

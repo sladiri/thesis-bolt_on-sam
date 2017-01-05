@@ -20,6 +20,17 @@ export const validate = validateAndLog({
  * - A pure and stateless function
  */
 export function state (input) {
+  if (input.error) {
+    return {
+      ...input,
+      view: 'error',
+      message: input.error.message,
+      stack: input.error.stack,
+      nap: () => {
+        debugger
+      },
+    }
+  }
   // throw new Error('sladi state')
 
   const {stuff, token} = input
