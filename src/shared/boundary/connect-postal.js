@@ -49,9 +49,9 @@ const isValid = validate => pipe(validate, head)
 
 export function getSource ({topics, logTag}) {
   const sink = new Subject()
-  const subs = topics.map(subscribe({sink, logTag}))
+  const postalSubs = topics.map(subscribe({sink, logTag}))
   return {
-    subs,
+    postalSubs,
     source: sink.asObservable()
       ::_catch(error => { console.log('getSource got error', logTag, error); debugger }),
   }

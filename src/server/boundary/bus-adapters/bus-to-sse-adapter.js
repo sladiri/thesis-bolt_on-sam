@@ -96,8 +96,8 @@ export default topics => {
 
     const socketStream = new PassThrough()
 
-    const {subs, source} = getSource({topics, logTag: logName})
-    const sub = source
+    const {postalSubs, source} = getSource({topics, logTag: logName})
+    const streamSub = source
       ::map(when(path(['envelope']), prop('data')))
       ::_do(saveTokenByID(streams, clientInitID))
       ::filter(filterByID(clientInitID))
@@ -125,7 +125,8 @@ export default topics => {
           socket.on('error', () => { log(`already socket closed for stream [id=${clientInitID}]`) })
         }
         clearInterval(keepalive)
-        sub.unsubscribe()
+        postalSubs.forEach(sub => { sub.unsubscribe() })
+        streamSub.unsubscribe()
         socket.removeListener(what, onCloseHandler)
         streams[clientInitID] = undefined
         delete streams[clientInitID]

@@ -46,11 +46,14 @@ export default async function httpToBusAdapter (ctx) {
     return
   }
 
-  if (path(['session', 'clientInitToken'], ctx)) {
+  /* Either this is the first request, or there is a concurrent first request.
+   * The cookie (session) with the initial ID is shared.
+   */
+  if (path(['session', 'clientInitToken'], ctx) && !path(['data', 'token'], data)) {
     const {session} = ctx
-    let {clientInitToken} = session
+    let clientInitToken
     try {
-      clientInitToken = jwt.verify(clientInitToken, 'secret')
+      clientInitToken = jwt.verify(session.clientInitToken, 'secret')
     } catch ({message}) {
       log(message)
       ctx.status = 403

@@ -29,9 +29,12 @@ export default function busToHttpAdapter ({url, targets}) {
       .catch(log)
   }
 
-  let {subs, source} = getSource({topics: targets, logTag: logName})
+  let {postalSubs, source} = getSource({topics: targets, logTag: logName})
   source
     ::map(busToBody)
-    ::_catch(error => { console.log('error', logName, error) })
+    ::_catch(error => {
+      postalSubs.forEach(sub => { sub.unsubscribe() })
+      log(logName, error)
+    })
     .subscribe(sendHttp)
 }
