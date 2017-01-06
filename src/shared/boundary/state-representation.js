@@ -2,7 +2,7 @@ import {logConsole} from './logger'
 import h from 'inferno-hyperscript'
 import validateAndLog from './json-schema'
 import {range} from 'ramda'
-import {getSink} from '../../shared/boundary/connect-postal'
+import {getSink} from './connect-postal'
 
 const logName = 'stateRepresentation'
 const log = logConsole(logName)

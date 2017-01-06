@@ -1,7 +1,7 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import validateAndLog from '../../../shared/boundary/json-schema'
 import {PassThrough} from 'stream'
-import {pipe, assocPath, path, when, prop, isNil} from 'ramda'
+import {pipe, assocPath, path, when, prop, isNil, __, not, compose} from 'ramda'
 import {getSource, busChannel} from '../../../shared/boundary/connect-postal'
 import jwt from 'jsonwebtoken'
 import {state} from '../../../shared/control/state'
@@ -9,6 +9,7 @@ import {map} from 'rxjs/operator/map'
 import {filter} from 'rxjs/operator/filter'
 import {_do} from 'rxjs/operator/do'
 import {_catch} from 'rxjs/operator/catch'
+import {mergeMap} from 'rxjs/operator/mergeMap'
 
 const logName = 'bus-to-sse-adapter'
 const log = logConsole(logName)
@@ -27,28 +28,34 @@ export const validate = validateAndLog({
 
 const getToken = path(['token'])
 
+const broadcastStreams = streams => message => {
+  return path(['meta', 'broadcast'], message)
+    ? Object.values(streams)
+      .filter(({streamID}) => streamID !== message.token.streamID)
+      .map(assocPath(['token'], __, message))
+      .map(assocPath(['isBroadcast'], true))
+      .concat(message)
+    : [message]
+}
+
 const filterSession = ctx => message => {
   return ctx.session.streamID === message.token.streamID
 }
 
 const setSession = ctx => message => {
-  console.log('set session 1', ctx.session.streamID, message.token.streamID)
   if (!ctx.session.streamID) {
     ctx.session.streamID = message.token.streamID
   }
-  console.log('set session 2', ctx.session.streamID, message.token.streamID)
   return message
+}
+
+const saveStream = streams => message => {
+  streams[message.token.streamID] = message.token
 }
 
 const signToken = message => {
   const messageToken = getToken(message)
-  console.log('sign signed?', !!messageToken.exp)
-  const token = messageToken
-    ? messageToken.exp
-      ? jwt.sign(messageToken, 'secret')
-      : jwt.sign(messageToken, 'secret', {expiresIn: '2h'})
-    : undefined
-
+  const token = jwt.sign(messageToken, 'secret')
   return assocPath(['token'], token, message)
 }
 
@@ -67,9 +74,9 @@ const fakePostalMessage = data => {
 const busToSseData = message => `data: ${JSON.stringify(message)}\n\n`
 
 export default topics => {
+  const streams = {}
+
   return async function busToSseAdapter (ctx) {
-    console.log('b2s first session', ctx.session.streamID)
-    // debugger
     const socketStream = new PassThrough()
 
     const {postalSubs, source} = getSource({topics, logTag: logName})
@@ -77,8 +84,12 @@ export default topics => {
       ::map(when(path(['envelope']), prop('data')))
       ::filter(pipe(prop('init'), isNil))
       ::map(setSession(ctx))
+      ::_do(saveStream(streams))
       ::filter(filterSession(ctx))
+      ::mergeMap(broadcastStreams(streams))
       ::map(state)
+      ::filter(compose(not, isNil))
+      ::_do(x => console.log('to sennnnnnnnd', x.token.streamID))
       ::map(signToken)
       ::map(fakePostalMessage)
       ::filter(validate)

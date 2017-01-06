@@ -25,23 +25,28 @@ const clone = obj => JSON.parse(JSON.stringify(obj))
  * Maintains data integrity
  */
 export function onPropose (input) {
-  console.log('mmm')
+  if (input.error) {
+    console.log(input.error)
+    debugger
+  }
   const {token} = input
 
-  if (input.init) {
-    return {...input, stuff: clone(stuff)}
+  if (input.init !== undefined) {
+    return {stuff: clone(stuff), token, init: input.init}
+  } else if (input.isBroadcast === true) {
+    return {stuff: clone(stuff), token}
   } else if (token.streamID === undefined) {
+    debugger
     console.log('Invalid client. TODO: Handle errors inside stream.', input)
   }
 
   const meta = {}
-
   if (token.expired) {
+    debugger
     console.log('mmmmmmmmmm reset expired session')
     delete token.userName
     delete token.expired
   } else {
-    console.log('mmmmmmmmmm yes token')
     if (input.increment) {
       // throw new Error('sladi model')
       stuff.field += 1
@@ -52,9 +57,9 @@ export function onPropose (input) {
   }
 
   return {
+    stuff: clone(stuff),
     token,
     meta,
-    stuff: clone(stuff),
   }
 }
 

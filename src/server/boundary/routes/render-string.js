@@ -3,7 +3,6 @@ import {renderToString} from 'inferno-server'
 import {pipe} from 'ramda'
 import stateRepresentation, {validate} from '../../../shared/boundary/state-representation'
 import {getSink} from '../../../shared/boundary/connect-postal'
-import jwt from 'jsonwebtoken'
 import {BehaviorSubject} from 'rxjs/BehaviorSubject'
 import {_catch} from 'rxjs/operator/catch'
 import {skip} from 'rxjs/operator/skip'
@@ -39,9 +38,6 @@ export async function renderString (ctx) {
   sub = index
     ::_catch(error => { console.log('error', logName, error) })
     .subscribe(view => {
-      // ctx.session.clientInitToken = jwt.sign({
-      //   clientInitID: `${Math.random().toString(36).substr(2, 16)}`,
-      // }, 'secret', {expiresIn: '120s'})
       ctx.body = view
       sub.unsubscribe()
       sub = undefined

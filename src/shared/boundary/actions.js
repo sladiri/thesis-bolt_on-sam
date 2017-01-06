@@ -8,7 +8,7 @@ const log = logConsole(logName)
 export const validate = validateAndLog({
   properties: {
     action: {
-      enum: ['init', 'incrementField', 'userSession'],
+      enum: ['init', 'incrementField', 'userSession', 'broadcast'],
     },
   },
 }, log)
@@ -16,6 +16,9 @@ export const validate = validateAndLog({
 const actions = {
   init (arg) {
     return {init: arg}
+  },
+  broadcast () {
+    return {isBroadcast: true}
   },
   incrementField (increment = 1) {
     return {increment}
@@ -30,19 +33,19 @@ const actions = {
  * - Calls external API (eg. validation service)
 */
 export function onAction (input) {
+  // throw new Error('sladi actions')
   let token
   if (input.action === 'init' && input.arg && input.arg.server === true) {
     return {...actions[input.action](input.arg)}
   } else if (input.action === 'init' && !input.arg) {
     const newToken = jwt.sign({
-      streamID: `${Math.random().toString(36).substr(2, 16)}`
-    }, 'secret', {expiresIn: '2h'})
+      streamID: `${Math.random().toString(36).substr(2, 16)}`,
+    }, 'secret', {expiresIn: '600d'})
     token = jwt.verify(newToken, 'secret')
   } else {
     token = jwt.verify(input.token, 'secret')
   }
   return {
-    ...input,
     ...actions[input.action](input.arg),
     token,
   }
