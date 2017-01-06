@@ -28,13 +28,10 @@ export function onPropose (input) {
   console.log('mmm')
   const {token} = input
 
-  if (input.init && input.init.server === true) {
+  if (input.init) {
     return {...input, stuff: clone(stuff)}
-  } else if (input.init !== undefined) {
-    token.streamID = input.init
-  } else if (input.init === undefined && token.streamID === undefined) {
-    debugger
-    console.log('Invalid client. TODO: Handle errors inside stream.')
+  } else if (token.streamID === undefined) {
+    console.log('Invalid client. TODO: Handle errors inside stream.', input)
   }
 
   const meta = {}

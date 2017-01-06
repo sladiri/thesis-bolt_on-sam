@@ -30,19 +30,19 @@ const actions = {
  * - Calls external API (eg. validation service)
 */
 export function onAction (input) {
-  if (input.action === 'init' && input.arg.server === true) {
+  let token
+  if (input.action === 'init' && input.arg && input.arg.server === true) {
     return {...actions[input.action](input.arg)}
-  }
-  let token = {}
-  try {
-    token = input.token
-      ? jwt.verify(input.token, 'secret')
-      : token
-  } catch ({message}) {
-    log('token error', message)
-    token = {...token, expired: true}
+  } else if (input.action === 'init' && !input.arg) {
+    const newToken = jwt.sign({
+      streamID: `${Math.random().toString(36).substr(2, 16)}`
+    }, 'secret', {expiresIn: '2h'})
+    token = jwt.verify(newToken, 'secret')
+  } else {
+    token = jwt.verify(input.token, 'secret')
   }
   return {
+    ...input,
     ...actions[input.action](input.arg),
     token,
   }

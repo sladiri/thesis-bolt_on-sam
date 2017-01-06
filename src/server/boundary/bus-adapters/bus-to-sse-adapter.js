@@ -1,7 +1,7 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import validateAndLog from '../../../shared/boundary/json-schema'
 import {PassThrough} from 'stream'
-import {pipe, assocPath, path, when, prop} from 'ramda'
+import {pipe, assocPath, path, when, prop, isNil} from 'ramda'
 import {getSource, busChannel} from '../../../shared/boundary/connect-postal'
 import jwt from 'jsonwebtoken'
 import {state} from '../../../shared/control/state'
@@ -25,28 +25,24 @@ export const validate = validateAndLog({
   },
 }, log)
 
-const getBroadcast = path(['meta', 'broadcast'])
 const getToken = path(['token'])
-const getTokenStreamID = pipe(getToken, path(['streamID']))
 
-const saveTokenByID = (streams, id) => message => {
-  if (getTokenStreamID(message) === id) {
-    streams[id] = getToken(message)
+const filterSession = ctx => message => {
+  return ctx.session.streamID === message.token.streamID
+}
+
+const setSession = ctx => message => {
+  console.log('set session 1', ctx.session.streamID, message.token.streamID)
+  if (!ctx.session.streamID) {
+    ctx.session.streamID = message.token.streamID
   }
+  console.log('set session 2', ctx.session.streamID, message.token.streamID)
   return message
-}
-
-const restoreTokenByID = (streams, id) => message => {
-  return assocPath(['token'], streams[id], message)
-}
-
-const filterByID = id => message => {
-  console.log('fil', id, getTokenStreamID(message), getBroadcast(message))
-  return getTokenStreamID(message) === id || getBroadcast(message)
 }
 
 const signToken = message => {
   const messageToken = getToken(message)
+  console.log('sign signed?', !!messageToken.exp)
   const token = messageToken
     ? messageToken.exp
       ? jwt.sign(messageToken, 'secret')
@@ -70,38 +66,18 @@ const fakePostalMessage = data => {
 
 const busToSseData = message => `data: ${JSON.stringify(message)}\n\n`
 
-const streams = {}
-
 export default topics => {
   return async function busToSseAdapter (ctx) {
-    let token
-    try {
-      token = jwt.verify(path(['session', 'clientInitToken'], ctx), 'secret')
-    } catch ({message}) {
-      log(message)
-      ctx.status = 403
-      ctx.body = {message: 'Invalid token.'}
-      return
-    }
-    const {clientInitID} = token
-    if (!clientInitID) {
-      const message = 'Missing clientInitID.'
-      log(message)
-      ctx.status = 403
-      ctx.body = {message}
-      return
-    }
-    streams[clientInitID] = token
-    console.log(`added stream [id=${clientInitID}] - ${Object.keys(streams).length} streams active`)
-
+    console.log('b2s first session', ctx.session.streamID)
+    // debugger
     const socketStream = new PassThrough()
 
     const {postalSubs, source} = getSource({topics, logTag: logName})
     const streamSub = source
       ::map(when(path(['envelope']), prop('data')))
-      ::_do(saveTokenByID(streams, clientInitID))
-      ::filter(filterByID(clientInitID))
-      ::map(when(getBroadcast, restoreTokenByID(streams, clientInitID)))
+      ::filter(pipe(prop('init'), isNil))
+      ::map(setSession(ctx))
+      ::filter(filterSession(ctx))
       ::map(state)
       ::map(signToken)
       ::map(fakePostalMessage)
@@ -122,16 +98,13 @@ export default topics => {
       return function onCloseHandler (message) {
         if (what === 'close') {
           socket.removeAllListeners('error')
-          socket.on('error', () => { log(`already socket closed for stream [id=${clientInitID}]`) })
+          socket.on('error', () => { log('already socket closed') })
         }
         clearInterval(keepalive)
         postalSubs.forEach(sub => { sub.unsubscribe() })
         streamSub.unsubscribe()
         socket.removeListener(what, onCloseHandler)
-        streams[clientInitID] = undefined
-        delete streams[clientInitID]
-        console.log(`removed stream [id=${clientInitID}] - ${Object.keys(streams).length} streams active`)
-        log(`socket closed for stream [id=${clientInitID}]`, what, message)
+        log('socket closed', what, message)
       }
     }
     socket.on('error', onClose('error'))

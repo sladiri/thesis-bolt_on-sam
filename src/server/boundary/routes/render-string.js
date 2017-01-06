@@ -39,9 +39,9 @@ export async function renderString (ctx) {
   sub = index
     ::_catch(error => { console.log('error', logName, error) })
     .subscribe(view => {
-      ctx.session.clientInitToken = jwt.sign({
-        clientInitID: `${Math.random().toString(36).substr(2, 16)}`,
-      }, 'secret', {expiresIn: '120s'})
+      // ctx.session.clientInitToken = jwt.sign({
+      //   clientInitID: `${Math.random().toString(36).substr(2, 16)}`,
+      // }, 'secret', {expiresIn: '120s'})
       ctx.body = view
       sub.unsubscribe()
       sub = undefined

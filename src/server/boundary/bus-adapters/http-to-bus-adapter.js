@@ -2,8 +2,7 @@ import {logConsole} from '../../../shared/boundary/logger'
 import getRawBody from 'raw-body'
 import contentType from 'content-type'
 import {toBusAdapter} from '../../../shared/boundary/connect-postal'
-import {path, assocPath} from 'ramda'
-import jwt from 'jsonwebtoken'
+import {assocPath} from 'ramda'
 
 const logName = 'http-to-bus-adapter'
 const log = logConsole(logName)
@@ -44,32 +43,6 @@ export default async function httpToBusAdapter (ctx) {
     ctx.status = 400
     ctx.body = {message: 'Invalid JSON in body.'}
     return
-  }
-
-  /* Either this is the first request, or there is a concurrent first request.
-   * The cookie (session) with the initial ID is shared.
-   */
-  if (path(['session', 'clientInitToken'], ctx) && !path(['data', 'token'], data)) {
-    const {session} = ctx
-    let clientInitToken
-    try {
-      clientInitToken = jwt.verify(session.clientInitToken, 'secret')
-    } catch ({message}) {
-      log(message)
-      ctx.status = 403
-      ctx.body = {message: 'Invalid token.'}
-      return
-    }
-    const {clientInitID} = clientInitToken
-    if (!clientInitID) {
-      const message = 'Missing clientInitID.'
-      log(message)
-      ctx.status = 403
-      ctx.body = {message}
-      return
-    }
-    data = assocPath(['data', 'arg'], clientInitID, data)
-    delete session.clientInitToken
   }
 
   log('got action request body')
