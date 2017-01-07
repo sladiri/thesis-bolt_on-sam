@@ -88,7 +88,7 @@ const views = {
 
 export default (input) => {
   // throw new Error('sladi state-rep')
-  console.log('state-pre', input)
+  console.log('state-pre', input.view)
 
   const {view, ...args} = input
   return views[view](args)

@@ -37,15 +37,15 @@ export function onPropose (input) {
     return {stuff: clone(stuff), token, init: input.init}
   } else if (input.isBroadcast === true) {
     // debugger
-    return {stuff: clone(stuff), token, meta}
+    return {stuff: clone(stuff), token, meta, isBroadcast: input.isBroadcast}
   } else if (token.streamID === undefined) {
     debugger
     console.log('Invalid client. TODO: Handle errors inside stream.', input)
   }
 
-  if (input.increment) {
-    meta.broadcast = true
-  }
+  // if (input.increment) {
+  //   meta.tobeBroadcast = true
+  // }
 
   if (meta.expiredToken === true) {
     // debugger
@@ -59,6 +59,7 @@ export function onPropose (input) {
   if (input.increment) {
     // throw new Error('sladi model')
     stuff.field += 1
+    meta.tobeBroadcast = true
   } else if (input.userName === null || db.users.includes(input.userName)) {
     token.userName = input.userName
   }

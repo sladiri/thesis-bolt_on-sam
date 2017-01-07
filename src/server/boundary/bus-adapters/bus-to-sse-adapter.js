@@ -30,36 +30,51 @@ const getToken = path(['token'])
 
 const broadcastStreams = (ctx, streams) => message => {
   const isExpired = path(['meta', 'expiredToken'], message)
-  const xxxx = path(['session', 'streamID'], ctx)
-  const yyyy = path(['session', 'streamID'], ctx)
-  console.log('broadc', path(['meta', 'broadcast'], message) && !isExpired, xxxx, yyyy)
-  const rrrrr = path(['meta', 'broadcast'], message) && !path(['meta', 'expiredToken'], message)
-    ? Object.values(streams)
-      .filter(({streamID}) => streamID !== message.token.streamID)
-      .map(assocPath(['token'], __, message))
-      .map(assocPath(['isBroadcast'], true))
-      .concat(message)
-    : isExpired
-      ? []
-      : [message]
+  const isBroadcast = path(['isBroadcast'], message)
+  const streamID = path(['session', 'streamID'], ctx)
+  const broadcasterID = path(['token', 'streamID'], message)
+  const tobeBroadcast = path(['meta', 'tobeBroadcast'], message)
 
-  // if (path(['meta', 'expiredToken'], message)) { debugger }
+  const rrrrr = isBroadcast
+    ? Object.values(streams)
+      .filter(({streamID}) => streamID !== broadcasterID)
+      .map(assocPath(['token'], __, message))
+      .map(assocPath(['wasBroadcast'], true))
+      // .concat(message)
+    : [message]
+    // : isExpired
+    //   ? []
+    //   : [message]
+
+  // if (isBroadcast) { debugger }
+  // if (isExpired) { debugger }
+  console.log('broadc', rrrrr.length, tobeBroadcast, isBroadcast, isExpired, broadcasterID, streamID)
   return rrrrr
 }
 
-const filterSession = ctx => message => {
-  return ctx.session.streamID === message.token.streamID
+const filterByID = ctx => message => {
+  console.log(ctx.session.streamID, message.token.streamID, message.token, message.meta)
+  return ctx.session.streamID === message.token.streamID ||
+    (ctx.session.streamID !== message.token.streamID &&
+    path(['meta', 'tobeBroadcast'], message) && !path(['wasBroadcast']))
 }
 
-const setSession = ctx => message => {
-  if (!ctx.session.streamID) {
-    ctx.session.streamID = message.token.streamID
+const resetBroadcastStreamID = ctx => message => {
+  if (ctx.session.streamID &&
+    ctx.session.streamID !== message.token.streamID && path(['isBroadcast'], message)) {
+    message.token.streamID = ctx.session.streamID
   }
-  console.log('setsess', ctx.session.streamID, message.meta, message.token)
   return message
 }
 
-const saveStream = streams => message => {
+const saveStreamIdToSession = ctx => message => {
+  if (!ctx.session.streamID) {
+    ctx.session.streamID = message.token.streamID
+  }
+  return message
+}
+
+const saveTokenByStreamID = streams => message => {
   streams[message.token.streamID] = message.token
 }
 
@@ -93,10 +108,11 @@ export default topics => {
     const streamSub = source
       ::map(when(path(['envelope']), prop('data')))
       ::filter(pipe(prop('init'), isNil))
-      ::map(setSession(ctx))
-      ::_do(saveStream(streams))
-      ::filter(filterSession(ctx))
+      ::map(saveStreamIdToSession(ctx))
+      ::_do(saveTokenByStreamID(streams))
       ::mergeMap(broadcastStreams(ctx, streams))
+      ::filter(filterByID(ctx))
+      ::map(resetBroadcastStreamID(ctx))
       ::map(state)
       ::filter(compose(not, isNil))
       ::_do(x => console.log('to sennnnnnnnd', x.token.streamID))

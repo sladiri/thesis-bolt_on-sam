@@ -19,6 +19,7 @@ const actions = {
     return {init: arg}
   },
   broadcast () {
+    // debugger
     return {isBroadcast: true}
   },
   incrementField (increment = 1) {
@@ -35,7 +36,7 @@ const actions = {
 */
 export function onAction (input) {
   // throw new Error('sladi actions')
-  console.log('action start', input.meta)
+  // console.log('action start', input.meta)
   let token
   const meta = {}
   if (input.action === 'init' && path(['arg', 'server'], input) === true) {
@@ -43,17 +44,17 @@ export function onAction (input) {
   } else if (input.action === 'init' && !input.arg) {
     const newToken = jwt.sign({
       streamID: `${Math.random().toString(36).substr(2, 16)}`,
-    }, 'secret', {expiresIn: '3s'})
+    }, 'secret', {expiresIn: '20s'})
     token = jwt.verify(newToken, 'secret')
   } else {
     try {
       token = jwt.verify(input.token, 'secret')
     } catch (error) {
       // debugger
-      console.log('||||||||| expired token')
+      console.log('||||||||||||||||||||||||| expired token')
       token = jwt.decode(input.token, 'secret')
       meta.expiredToken = true
-      if (input.action === 'broadcast') { meta.broadcast = true }
+      // if (input.action === 'broadcast') { meta.tobeBroadcast = true }
     }
   }
   console.log('action end', meta)

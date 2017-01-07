@@ -2,6 +2,7 @@ import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
 import {getSink} from '../boundary/connect-postal'
 import jwt from 'jsonwebtoken'
+import {path} from 'ramda'
 
 const logName = 'state'
 const log = logConsole(logName)
@@ -24,23 +25,29 @@ const actionSink = getSink({targets: ['actions'], logTag: logName})
  * - A pure and stateless function
  */
 export function state (input) {
+  console.log('state meta', input.meta)
+  if (input.wasBroadcast) {
+    // debugger
+  }
   // throw new Error('sladi state')
-  const {error, token, meta, stuff} = input
+  const {error, token, stuff} = input
 
   if (error) {
     // debugger
     return {
       ...input,
       view: 'error',
-      message: input.error.message,
-      stack: input.error.stack,
+      message: error.message,
+      stack: error.stack,
     }
   }
-  if (input.isBroadcast && token) {
+  if (path(['meta', 'tobeBroadcast'], input) && input.isBroadcast) {
+    debugger
+  }
+  if (path(['meta', 'tobeBroadcast'], input) && token) {
     setTimeout(() => {
       actionSink({action: 'broadcast', token: jwt.sign(token, 'secret')})
     }, 0)
-    return
   }
 
   if (stuff && token) {
