@@ -28,14 +28,23 @@ export const validate = validateAndLog({
 
 const getToken = path(['token'])
 
-const broadcastStreams = streams => message => {
-  return path(['meta', 'broadcast'], message)
+const broadcastStreams = (ctx, streams) => message => {
+  const isExpired = path(['meta', 'expiredToken'], message)
+  const xxxx = path(['session', 'streamID'], ctx)
+  const yyyy = path(['session', 'streamID'], ctx)
+  console.log('broadc', path(['meta', 'broadcast'], message) && !isExpired, xxxx, yyyy)
+  const rrrrr = path(['meta', 'broadcast'], message) && !path(['meta', 'expiredToken'], message)
     ? Object.values(streams)
       .filter(({streamID}) => streamID !== message.token.streamID)
       .map(assocPath(['token'], __, message))
       .map(assocPath(['isBroadcast'], true))
       .concat(message)
-    : [message]
+    : isExpired
+      ? []
+      : [message]
+
+  // if (path(['meta', 'expiredToken'], message)) { debugger }
+  return rrrrr
 }
 
 const filterSession = ctx => message => {
@@ -46,6 +55,7 @@ const setSession = ctx => message => {
   if (!ctx.session.streamID) {
     ctx.session.streamID = message.token.streamID
   }
+  console.log('setsess', ctx.session.streamID, message.meta, message.token)
   return message
 }
 
@@ -86,7 +96,7 @@ export default topics => {
       ::map(setSession(ctx))
       ::_do(saveStream(streams))
       ::filter(filterSession(ctx))
-      ::mergeMap(broadcastStreams(streams))
+      ::mergeMap(broadcastStreams(ctx, streams))
       ::map(state)
       ::filter(compose(not, isNil))
       ::_do(x => console.log('to sennnnnnnnd', x.token.streamID))
@@ -94,8 +104,9 @@ export default topics => {
       ::map(fakePostalMessage)
       ::filter(validate)
       ::map(busToSseData)
+      ::_do(::socketStream.write)
       ::_catch(error => { console.log('bus2sse error', logName, error); debugger })
-      .subscribe(::socketStream.write)
+      .subscribe()
 
     const {socket} = ctx
     const keepaliveInterval = 1000 * 60 * 5

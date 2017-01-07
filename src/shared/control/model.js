@@ -25,35 +25,42 @@ const clone = obj => JSON.parse(JSON.stringify(obj))
  * Maintains data integrity
  */
 export function onPropose (input) {
+  console.log('model start', input.meta)
+
   if (input.error) {
     console.log(input.error)
     debugger
   }
-  const {token} = input
+  const {token, meta} = input
 
   if (input.init !== undefined) {
     return {stuff: clone(stuff), token, init: input.init}
   } else if (input.isBroadcast === true) {
-    return {stuff: clone(stuff), token}
+    // debugger
+    return {stuff: clone(stuff), token, meta}
   } else if (token.streamID === undefined) {
     debugger
     console.log('Invalid client. TODO: Handle errors inside stream.', input)
   }
 
-  const meta = {}
-  if (token.expired) {
-    debugger
-    console.log('mmmmmmmmmm reset expired session')
-    delete token.userName
-    delete token.expired
-  } else {
-    if (input.increment) {
-      // throw new Error('sladi model')
-      stuff.field += 1
-      meta.broadcast = true
-    } else if (input.userName === null || db.users.includes(input.userName)) {
-      token.userName = input.userName
+  if (input.increment) {
+    meta.broadcast = true
+  }
+
+  if (meta.expiredToken === true) {
+    // debugger
+    return {
+      error: new Error('Expired token.'),
+      token,
+      meta,
     }
+  }
+
+  if (input.increment) {
+    // throw new Error('sladi model')
+    stuff.field += 1
+  } else if (input.userName === null || db.users.includes(input.userName)) {
+    token.userName = input.userName
   }
 
   return {

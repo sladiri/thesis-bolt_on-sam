@@ -1,6 +1,7 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
 import jwt from 'jsonwebtoken'
+import {path} from 'ramda'
 
 const logName = 'actions'
 const log = logConsole(logName)
@@ -34,20 +35,32 @@ const actions = {
 */
 export function onAction (input) {
   // throw new Error('sladi actions')
+  console.log('action start', input.meta)
   let token
-  if (input.action === 'init' && input.arg && input.arg.server === true) {
+  const meta = {}
+  if (input.action === 'init' && path(['arg', 'server'], input) === true) {
     return {...actions[input.action](input.arg)}
   } else if (input.action === 'init' && !input.arg) {
     const newToken = jwt.sign({
       streamID: `${Math.random().toString(36).substr(2, 16)}`,
-    }, 'secret', {expiresIn: '600d'})
+    }, 'secret', {expiresIn: '3s'})
     token = jwt.verify(newToken, 'secret')
   } else {
-    token = jwt.verify(input.token, 'secret')
+    try {
+      token = jwt.verify(input.token, 'secret')
+    } catch (error) {
+      // debugger
+      console.log('||||||||| expired token')
+      token = jwt.decode(input.token, 'secret')
+      meta.expiredToken = true
+      if (input.action === 'broadcast') { meta.broadcast = true }
+    }
   }
+  console.log('action end', meta)
   return {
     ...actions[input.action](input.arg),
     token,
+    meta,
   }
 }
 

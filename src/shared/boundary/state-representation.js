@@ -77,6 +77,8 @@ const views = {
     ])
   },
   error ({message, stack}) {
+    // debugger
+    console.log('rep = error error error error error')
     return root([
       h('p.err', message),
       h('p.err', stack),
@@ -86,6 +88,7 @@ const views = {
 
 export default (input) => {
   // throw new Error('sladi state-rep')
+  console.log('state-pre', input)
 
   const {view, ...args} = input
   return views[view](args)

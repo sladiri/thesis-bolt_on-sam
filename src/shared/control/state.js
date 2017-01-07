@@ -25,9 +25,10 @@ const actionSink = getSink({targets: ['actions'], logTag: logName})
  */
 export function state (input) {
   // throw new Error('sladi state')
-  const {error, isBroadcast, token, stuff} = input
+  const {error, token, meta, stuff} = input
 
   if (error) {
+    // debugger
     return {
       ...input,
       view: 'error',
@@ -35,7 +36,7 @@ export function state (input) {
       stack: input.error.stack,
     }
   }
-  if (isBroadcast && token) {
+  if (input.isBroadcast && token) {
     setTimeout(() => {
       actionSink({action: 'broadcast', token: jwt.sign(token, 'secret')})
     }, 0)
