@@ -35,7 +35,7 @@ const actionSink = (action, arg, options) =>
 
 const incrementButton = (stuff, token, disabled) =>
   h('button', {
-    onclick () { actionSink('incrementField', undefined, {token}) },
+    onclick () { actionSink('incrementField', 1, {token}) },
     disabled,
   }, 'increment field')
 
@@ -77,8 +77,7 @@ const views = {
     ])
   },
   error ({message, stack}) {
-    // debugger
-    console.log('rep = error error error error error')
+    console.log('rep = error error error error error', message, stack)
     return root([
       h('p.err', message),
       h('p.err', stack),
@@ -87,8 +86,13 @@ const views = {
 }
 
 export default (input) => {
-  // throw new Error('sladi state-rep')
-  console.log('state-pre', input.view)
+  const {error} = input
+  if (!input.view && error) {
+    console.log('Got error in state-rep without view, setting view to error')
+    input.view = 'error'
+    input.message = error.message
+    input.stack = error.stack
+  }
 
   const {view, ...args} = input
   return views[view](args)

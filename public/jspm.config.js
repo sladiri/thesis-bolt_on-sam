@@ -62,9 +62,8 @@ SystemJS.config({
     "debug": "npm:debug@2.3.3",
     "events": "npm:jspm-nodelibs-events@0.2.0",
     "fs": "npm:jspm-nodelibs-fs@0.2.0",
-    "inferno": "npm:inferno@0.7.27",
-    "inferno-dom": "npm:inferno-dom@0.7.27",
-    "inferno-hyperscript": "npm:inferno-hyperscript@2.0.3",
+    "inferno": "npm:inferno@1.1.2",
+    "inferno-hyperscript": "npm:inferno-hyperscript@1.1.2",
     "module": "npm:jspm-nodelibs-module@0.2.0",
     "os": "npm:jspm-nodelibs-os@0.2.0",
     "path": "npm:jspm-nodelibs-path@0.2.1",
@@ -354,7 +353,7 @@ SystemJS.config({
         "create-hash": "npm:create-hash@1.1.2",
         "evp_bytestokey": "npm:evp_bytestokey@1.0.0",
         "pbkdf2": "npm:pbkdf2@3.0.9",
-        "asn1.js": "npm:asn1.js@4.9.0"
+        "asn1.js": "npm:asn1.js@4.9.1"
       }
     },
     "npm:evp_bytestokey@1.0.0": {
@@ -419,13 +418,6 @@ SystemJS.config({
         "minimalistic-assert": "npm:minimalistic-assert@1.0.0"
       }
     },
-    "npm:asn1.js@4.9.0": {
-      "map": {
-        "bn.js": "npm:bn.js@4.11.6",
-        "inherits": "npm:inherits@2.0.3",
-        "minimalistic-assert": "npm:minimalistic-assert@1.0.0"
-      }
-    },
     "npm:hash.js@1.0.3": {
       "map": {
         "inherits": "npm:inherits@2.0.3"
@@ -458,57 +450,21 @@ SystemJS.config({
         "lodash": "npm:lodash@4.17.2"
       }
     },
-    "npm:inferno-hyperscript@2.0.3": {
-      "map": {
-        "inferno": "npm:inferno@0.7.27",
-        "lodash": "npm:lodash@4.17.2",
-        "virtual-dom": "npm:virtual-dom@2.1.1"
-      }
-    },
-    "npm:inferno-dom@0.7.27": {
-      "map": {
-        "inferno": "npm:inferno@0.7.27"
-      }
-    },
-    "npm:virtual-dom@2.1.1": {
-      "map": {
-        "error": "npm:error@4.4.0",
-        "x-is-array": "npm:x-is-array@0.1.0",
-        "browser-split": "npm:browser-split@0.0.1",
-        "global": "npm:global@4.3.1",
-        "ev-store": "npm:ev-store@7.0.0",
-        "next-tick": "npm:next-tick@0.2.2",
-        "is-object": "npm:is-object@1.0.1",
-        "x-is-string": "npm:x-is-string@0.1.0"
-      }
-    },
-    "npm:error@4.4.0": {
-      "map": {
-        "camelize": "npm:camelize@1.0.0",
-        "string-template": "npm:string-template@0.2.1",
-        "xtend": "npm:xtend@4.0.1"
-      }
-    },
-    "npm:global@4.3.1": {
-      "map": {
-        "min-document": "npm:min-document@2.19.0",
-        "node-min-document": "npm:min-document@2.19.0",
-        "process": "npm:process@0.5.2"
-      }
-    },
-    "npm:ev-store@7.0.0": {
-      "map": {
-        "individual": "npm:individual@3.0.0"
-      }
-    },
-    "npm:min-document@2.19.0": {
-      "map": {
-        "dom-walk": "npm:dom-walk@0.1.1"
-      }
-    },
     "npm:rxjs@5.0.2": {
       "map": {
         "symbol-observable": "npm:symbol-observable@1.0.4"
+      }
+    },
+    "npm:inferno-hyperscript@1.1.2": {
+      "map": {
+        "inferno": "npm:inferno@1.1.2"
+      }
+    },
+    "npm:asn1.js@4.9.1": {
+      "map": {
+        "bn.js": "npm:bn.js@4.11.6",
+        "inherits": "npm:inherits@2.0.3",
+        "minimalistic-assert": "npm:minimalistic-assert@1.0.0"
       }
     }
   }

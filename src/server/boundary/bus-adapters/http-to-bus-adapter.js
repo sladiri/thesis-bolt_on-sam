@@ -3,6 +3,7 @@ import getRawBody from 'raw-body'
 import contentType from 'content-type'
 import {toBusAdapter} from '../../../shared/boundary/connect-postal'
 import {assocPath} from 'ramda'
+import jwt from 'jsonwebtoken'
 
 const logName = 'http-to-bus-adapter'
 const log = logConsole(logName)
@@ -45,7 +46,15 @@ export default async function httpToBusAdapter (ctx) {
     return
   }
 
+  const token = ctx.session.serverInitToken
+  if (token) {
+    delete ctx.session.serverInitToken
+    data = assocPath(['data', 'token'], token, data)
+  }
+
   log('got action request body')
+
   toBusAdapter({sinks: {}, logTag: logName})(data)
+
   ctx.status = 200
 }

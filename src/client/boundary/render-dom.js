@@ -1,5 +1,5 @@
 import {logConsole} from '../../shared/boundary/logger'
-import {render} from 'inferno-dom'
+import {render} from 'inferno'
 import {__, curry, pipe} from 'ramda'
 import stateRepresentation, {validate} from '../../shared/boundary/state-representation'
 import {getSink} from '../../shared/boundary/connect-postal'
@@ -25,6 +25,4 @@ export default {
   handler: onStateRepresentation,
 }
 
-setTimeout(() => {
-  getSink({targets: ['actions'], logTag: 'client-wire'})({action: 'init'})
-}, 0)
+setTimeout(() => { getSink({targets: ['actions'], logTag: logName})({action: 'initClient'}) }, 200)

@@ -7,6 +7,8 @@ const log = logConsole(logName)
 export const validate = validateAndLog({
 }, log)
 
+const clone = obj => JSON.parse(JSON.stringify(obj))
+
 const db = {
   groups: [
     {name: 'admin', members: ['anton']},
@@ -19,56 +21,41 @@ const stuff = {
   field: 42,
 }
 
-const clone = obj => JSON.parse(JSON.stringify(obj))
+const mutations = {
+  increment ({amount}) {
+    if (!amount) {
+      return {noOp: true}
+    }
+    stuff.field += amount
+    return {broadcast: true}
+  },
+  userSession ({userName, token}) {
+    if (!(userName === null || db.users.includes(userName))) {
+      return {noOp: true}
+    }
+    token.userName = userName
+  },
+}
 
 /**
  * Maintains data integrity
  */
 export function onPropose (input) {
-  console.log('model start', input.meta)
-
   if (input.error) {
-    console.log(input.error)
-    debugger
-  }
-  const {token, meta} = input
-
-  if (input.init !== undefined) {
-    return {stuff: clone(stuff), token, init: input.init}
-  } else if (input.isBroadcast === true) {
-    // debugger
-    return {stuff: clone(stuff), token, meta, isBroadcast: input.isBroadcast}
-  } else if (token.streamID === undefined) {
-    debugger
-    console.log('Invalid client. TODO: Handle errors inside stream.', input)
+    return input
   }
 
-  // if (input.increment) {
-  //   meta.tobeBroadcast = true
-  // }
-
-  if (meta.expiredToken === true) {
-    // debugger
-    return {
-      error: new Error('Expired token.'),
-      token,
-      meta,
-    }
+  if (input.init === 'server' || input.init === 'client') {
+    return {...input, stuff: clone(stuff)}
   }
 
-  if (input.increment) {
-    // throw new Error('sladi model')
-    stuff.field += 1
-    meta.tobeBroadcast = true
-  } else if (input.userName === null || db.users.includes(input.userName)) {
-    token.userName = input.userName
+  if (input.broadcasterID) {
+    return {...input, stuff: clone(stuff)}
   }
 
-  return {
-    stuff: clone(stuff),
-    token,
-    meta,
-  }
+  const options = mutations[input.mutation](input) || {}
+
+  return {...input, ...options, stuff: clone(stuff)}
 }
 
 export default {

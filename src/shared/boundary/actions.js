@@ -1,32 +1,35 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
 import jwt from 'jsonwebtoken'
-import {path} from 'ramda'
 
 const logName = 'actions'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
-  properties: {
-    action: {
-      enum: ['init', 'incrementField', 'userSession', 'broadcast'],
-    },
-  },
+  // properties: {
+  //   action: {
+  //     enum: ['initServer', 'initClient', 'incrementField', 'userSession', 'broadcast'],
+  //   },
+  // },
 }, log)
 
 const actions = {
-  init (arg) {
-    return {init: arg}
+  initServer () {
+    return {init: 'server'}
   },
-  broadcast () {
-    // debugger
-    return {isBroadcast: true}
+  initClient ({token}) {
+    const {streamID} = jwt.verify(token, 'secret')
+    return {init: 'client', token: jwt.sign({streamID}, 'secret', {expiresIn: '1y'})}
   },
-  incrementField (increment = 1) {
-    return {increment}
+  broadcast ({token}) {
+    const {streamID} = jwt.verify(token, 'secret')
+    return {broadcasterID: streamID}
   },
-  userSession (userName) {
-    return {userName}
+  incrementField ({arg, token}) {
+    return {mutation: 'increment', amount: arg}
+  },
+  userSession ({arg}) {
+    return {mutation: 'userSession', userName: arg}
   },
 }
 
@@ -35,34 +38,33 @@ const actions = {
  * - Calls external API (eg. validation service)
 */
 export function onAction (input) {
-  // throw new Error('sladi actions')
-  // console.log('action start', input.meta)
-  let token
-  const meta = {}
-  if (input.action === 'init' && path(['arg', 'server'], input) === true) {
-    return {...actions[input.action](input.arg)}
-  } else if (input.action === 'init' && !input.arg) {
-    const newToken = jwt.sign({
-      streamID: `${Math.random().toString(36).substr(2, 16)}`,
-    }, 'secret', {expiresIn: '20s'})
-    token = jwt.verify(newToken, 'secret')
-  } else {
-    try {
-      token = jwt.verify(input.token, 'secret')
-    } catch (error) {
-      // debugger
-      console.log('||||||||||||||||||||||||| expired token')
-      token = jwt.decode(input.token, 'secret')
-      meta.expiredToken = true
-      // if (input.action === 'broadcast') { meta.tobeBroadcast = true }
+  const {action, ...args} = input
+
+  console.log('action args', action, '\n', args)
+
+  let actionResult
+
+  try {
+    actionResult = {
+      token: input.token,
+      ...(actions[action](args) || {}),
     }
+  } catch (error) {
+    debugger
+    log('Invalid client action', actionResult.error)
+    return
   }
-  console.log('action end', meta)
-  return {
-    ...actions[input.action](input.arg),
-    token,
-    meta,
+
+  try {
+    actionResult.token = jwt.verify(actionResult.token, 'secret')
+  } catch (error) {
+    debugger
+    return
   }
+
+  console.log('action result', action, actionResult)
+
+  return actionResult
 }
 
 export default {

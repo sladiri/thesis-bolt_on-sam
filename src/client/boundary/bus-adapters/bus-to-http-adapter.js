@@ -12,8 +12,7 @@ function busToBody (message) {
 }
 
 const defaultOptions = {
-  // credentials: 'include',
-  credentials: 'same-origin',
+  credentials: 'same-origin', // 'include'
   method: 'POST',
   headers: {
     'content-type': 'application/json; charset=UTF-8',

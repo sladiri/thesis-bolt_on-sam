@@ -6,6 +6,7 @@ import {getSink} from '../../../shared/boundary/connect-postal'
 import {BehaviorSubject} from 'rxjs/BehaviorSubject'
 import {_catch} from 'rxjs/operator/catch'
 import {skip} from 'rxjs/operator/skip'
+import jwt from 'jsonwebtoken'
 
 const logName = 'render-index'
 const log = logConsole(logName)
@@ -35,24 +36,43 @@ let sub
 const actionSink = getSink({targets: ['actions'], logTag: logName})
 
 export async function renderString (ctx) {
+  const streamID = `${Math.random().toString(36).substr(2, 16)}`
+  const token = jwt.sign({streamID}, 'secret', {expiresIn: '60s'})
+
   sub = index
-    ::_catch(error => { console.log('error', logName, error) })
+    ::_catch(error => {
+      log(error)
+      ctx.status = 500
+      ctx.body = {message: error.message}
+      sub.unsubscribe()
+      sub = undefined
+    })
     .subscribe(view => {
+      ctx.streamID = undefined
+      ctx.session.serverInitToken = token
       ctx.body = view
       sub.unsubscribe()
       sub = undefined
     })
 
-  actionSink({action: 'init', arg: {server: true}})
+  actionSink({action: 'initServer', token})
 }
 
 export function onStateRepresentation (input) {
-  pipe(
-    stateRepresentation,
-    renderToString,
-    markup,
-    ::index.next,
-  )(input)
+  if (input.broadcasterID) {
+    return
+  }
+
+  try {
+    pipe(
+      stateRepresentation,
+      renderToString,
+      markup,
+      ::index.next,
+    )(input)
+  } catch (error) {
+    index.error(error)
+  }
 
   log('rendered')
 }
