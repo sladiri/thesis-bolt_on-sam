@@ -6,15 +6,21 @@ const logName = 'actions'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
-  // properties: {
-  //   action: {
-  //     enum: ['initServer', 'initClient', 'incrementField', 'userSession', 'broadcast'],
-  //   },
-  // },
+  required: ['token', 'action'],
+  properties: {
+    action: {
+      enum: ['initServer', 'initClient', 'incrementField', 'userSession', 'broadcast', 'groupMessage'],
+    },
+  },
 }, log)
 
 const actions = {
-  initServer () {
+  initServer (args) {
+    // TODO: allow reuse of session after reload
+    // console.log(args)
+    // if (args.token) {
+    //   console.log(jwt.decode(args.token, 'secret'))
+    // }
     return {init: 'server'}
   },
   initClient ({token}) {
@@ -29,7 +35,10 @@ const actions = {
     return {mutation: 'increment', amount: arg}
   },
   userSession ({arg}) {
-    return {mutation: 'userSession', userName: arg}
+    return {mutation: 'userSession', userName: arg || null}
+  },
+  groupMessage ({arg: {group, message}}) {
+    return {mutation: 'postMessage', group, message}
   },
 }
 

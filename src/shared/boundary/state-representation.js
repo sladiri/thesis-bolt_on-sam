@@ -21,79 +21,100 @@ export const validate = validateAndLog({
   // },
 }, log)
 
+const styles = {
+  ellipsis: {
+    'overflow-x': 'hidden',
+    'text-overflow': 'ellipsis',
+    'white-space': 'nowrap',
+    width: '90%',
+  },
+  tiny: {'font-size': 'x-small'}
+}
+
 const numbers = range(1, 12).map(x => Math.random())
 const list = () =>
-  h('div.list', numbers.map((x, i) => {
+  h('ul', numbers.map((x, i) => {
     if (Math.random() < 0.5) {
       numbers[i] = Math.random()
     }
-    return h('p.row', numbers[i])
+    return h('li', {style: styles.tiny}, numbers[i])
   }))
 
-const actionSink = (action, arg, options) =>
-  getSink({targets: ['actions'], logTag: logName})({action, arg, ...options})
+const actionSink = getSink({targets: ['actions'], logTag: logName})
 
-const incrementButton = (stuff, token, disabled) =>
+const incrementButton = (stuff, signal, disabled) =>
   h('button', {
-    onclick () { actionSink('incrementField', 1, {token}) },
+    onclick () { signal('incrementField', 1) },
     disabled,
   }, 'increment field')
 
-const fields = (stuff, token) =>
-  h('p.fields', [
-    h('p', [h('span', 'token: '), h('span', token || 'no token')]),
-    h('p', [h('span', 'streamID: '), h('span', stuff.streamID || 'no streamID')]),
-    h('p', [h('span', 'field: '), h('span', stuff.field)]),
-    incrementButton(stuff, token),
+const fields = (stuff, signal) =>
+  h('div.fields', {style: styles.ellipsis}, [
+    h('h2', 'Fields'),
+    h('span', 'streamID: '), h('span', stuff.streamID), h('br'),
+    h('span', `field: ${stuff.field} - `), incrementButton(stuff, signal), h('br'),
   ])
 
-const userButton = (stuff, token) =>
+const userSessionButton = (stuff, signal, logout) =>
   h('button', {
     onclick () {
       const input = document.querySelector('#loginUserName')
-      actionSink('userSession', input && input.value || null, {token})
+      signal('userSession', logout ? null : input.value)
     },
   }, stuff.userName ? `Log Out ${stuff.userName}` : 'Log In')
 
-const user = (stuff, token) => {
-  const {userName} = stuff
-  return h('p.user', [
-    h('h2', 'User'),
-    userName
-      ? h('p', [h('span', 'User Name: '), h('span', userName)])
-      : h('p', [h('input#loginUserName', {placeholder: 'Enter User Name'})]),
-    userButton(stuff, token),
-  ])
-}
+const messageButton = (signal, group, message) =>
+  h('button', {
+    onclick () {
+      signal('groupMessage', {group, message: `This is a random message for group '${group}': ${message}`})
+    },
+  }, `Send message to ${group}`)
 
 const root = children => h('div#state-representation', children)
 
 const views = {
-  initial ({stuff, token}) {
-    return root([
-      user(stuff, token),
-      fields(stuff, token),
-      list(),
-    ])
-  },
   error ({message, stack}) {
-    console.log('rep = error error error error error', message, stack)
     return root([
       h('p.err', message),
       h('p.err', stack),
     ])
   },
+  initial ({stuff, signal}) {
+    return root([
+      h('p.user', [
+        h('h2', 'User Login'),
+        h('input#loginUserName', {placeholder: 'Enter User Name'}), userSessionButton(stuff, signal), h('br'),
+      ]),
+      fields(stuff, signal),
+      list(),
+    ])
+  },
+  loggedIn ({stuff, signal}) {
+    return root([
+      h('p.user', [
+        h('h2', `User: ${stuff.userName}`),
+        userSessionButton(stuff, signal, true), h('hr'),
+        h('span', 'User Name: '), h('span', stuff.userName), h('br'),
+        h('span', 'Group Name: '), h('span', stuff.group), h('br'),
+        h('ul', stuff.groups.map(group => h('li', [messageButton(signal, group, `${Math.random()}`)]))),
+        h('ul', stuff.groupPosts.map(post => h('li', post))),
+      ]),
+      fields(stuff, signal),
+      list(),
+    ])
+  },
 }
 
 export default (input) => {
-  const {error} = input
-  if (!input.view && error) {
-    console.log('Got error in state-rep without view, setting view to error')
+  if (!input.view && input.error) {
+    log('Got error in state-rep without view, setting view to error')
     input.view = 'error'
-    input.message = error.message
-    input.stack = error.stack
+    input.message = input.error.message
+    input.stack = input.error.stack
   }
 
+  const signal = (action, arg) => actionSink({token: input.token, action, arg})
+
   const {view, ...args} = input
-  return views[view](args)
+  return views[view]({...args, signal})
 }

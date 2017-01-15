@@ -10,30 +10,44 @@ export const validate = validateAndLog({
 const clone = obj => JSON.parse(JSON.stringify(obj))
 
 const db = {
+  field: 42,
   groups: [
-    {name: 'admin', members: ['anton']},
-    {name: 'group-A', members: ['berta', 'caesar', 'dora']},
+    {name: 'admin', members: ['anton'], posts: []},
+    {name: 'group-A', members: ['berta', 'caesar', 'dora'], posts: []},
   ],
   users: ['anton', 'berta', 'caesar', 'dora'],
 }
 
-const stuff = {
-  field: 42,
-}
+const mapDB = db =>
+  ({
+    data: clone({
+      field: db.field,
+      groups: db.groups,
+    }),
+  })
 
 const mutations = {
   increment ({amount}) {
-    if (!amount) {
-      return {noOp: true}
-    }
-    stuff.field += amount
+    if (!amount) { return {noOp: true} }
+
+    db.field += amount
     return {broadcast: true}
   },
   userSession ({userName, token}) {
     if (!(userName === null || db.users.includes(userName))) {
       return {noOp: true}
     }
+
     token.userName = userName
+  },
+  postMessage ({group: groupName, message, token}) {
+    let group
+    if (!(group = db.groups.find(group => group.name === groupName))) {
+      return {noOp: true}
+    }
+
+    group.posts.push(message)
+    return {broadcast: true}
   },
 }
 
@@ -41,26 +55,15 @@ const mutations = {
  * Maintains data integrity
  */
 export function onPropose (input) {
-  if (input.error) {
-    return input
-  }
+  if (input.error) { return input }
 
-  if (input.init === 'server' || input.init === 'client') {
-    return {...input, stuff: clone(stuff)}
-  }
-
-  if (input.broadcasterID) {
-    return {...input, stuff: clone(stuff)}
+  if (input.init === 'server' || input.init === 'client' || input.broadcasterID) {
+    return {...input, ...mapDB(db)}
   }
 
   const options = mutations[input.mutation](input) || {}
 
-  return {
-    token: input.token,
-    ...options,
-    stuff: clone(stuff),
-  }
-  // return {...input, ...options, stuff: clone(stuff)}
+  return {token: input.token, ...options, ...mapDB(db)}
 }
 
 export default {
