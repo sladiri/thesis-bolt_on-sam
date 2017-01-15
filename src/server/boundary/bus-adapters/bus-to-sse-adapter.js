@@ -31,10 +31,6 @@ const token = path(['token'])
 const tokenID = pipe(token, path(['streamID']))
 const broadcasterID = path(['broadcasterID'])
 
-const filterBroadcastersBroadcast = ctx => message => {
-  return sessionID(ctx) !== broadcasterID(message)
-}
-
 const restoreToken = ctx => message => {
   message.token = token(ctx.session)
   return message
@@ -42,10 +38,6 @@ const restoreToken = ctx => message => {
 
 const saveTokenToSession = ctx => message => {
   ctx.session.token = token(message)
-}
-
-const filterByID = ctx => message => {
-  return sessionID(ctx) === tokenID(message) || broadcasterID(message)
 }
 
 const signToken = message => {
@@ -74,9 +66,6 @@ const broadcast = message => {
   }
 }
 
-const busToSseData = message => `data: ${JSON.stringify(message)}\n\n`
-const sendKeepAliveMessage = socketStream => pipe(() => `data: ${JSON.stringify({KA: true})}\n\n`, ::socketStream.write)
-
 let msgID = 1001
 export default topics => {
   return async function busToSseAdapter (ctx) {
@@ -96,15 +85,13 @@ export default topics => {
       const {postalSubs, source} = getSource({topics, logTag: logName})
 
       const streamSub = source
-        ::map(when(path(['envelope']), path(['data'])))
+        ::map(assocPath(['data', 'msgID'], msgID++))
+        ::_do(message => console.log('######## start', '\n', {sess: ctx.session}, '\n', message, '\n'))
+        ::map(path(['data']))
         ::filter(pipe(path(['init']), equals('server'), not))
-        ::map(assocPath(['msgID'], msgID++))
-        ::_do(message => console.log('######## start'))
-        // ::_do(message => console.log('######## start3 #######\n', {sess: ctx.session}, '\n', message, '\n'))
-        ::filter(filterBroadcastersBroadcast(ctx))
+        ::filter(message => sessionID(ctx) !== broadcasterID(message))
         ::map(when(broadcasterID, restoreToken(ctx)))
-        ::filter(filterByID(ctx))
-        // ::_do(message => console.log('to state ---------->\n', {sess: ctx.session}, '\n', message, '\n'))
+        ::filter(message => sessionID(ctx) === tokenID(message) || broadcasterID(message))
         ::map(state)
         ::filter(pipe(isNil, not))
         ::_do(message => console.log('========= to signToken =========>>\n', {sess: ctx.session}, '\n', message, '\n\n'))
@@ -113,7 +100,7 @@ export default topics => {
           signToken,
           fakePostalMessage,
           when(validate, pipe(
-            busToSseData,
+            message => `data: ${JSON.stringify(message)}\n\n`,
             ::socketStream.write,
           )),
         ))
@@ -125,7 +112,10 @@ export default topics => {
       const {socket} = ctx
       const keepaliveInterval = 1000 * 60 * 5
 
-      const keepalive = setInterval(sendKeepAliveMessage(socketStream), keepaliveInterval)
+      const keepalive = setInterval(
+        pipe(() => `data: ${JSON.stringify({KA: true})}\n\n`, ::socketStream.write),
+        keepaliveInterval)
+
       socket.setTimeout(keepaliveInterval * 2)
 
       ctx.res.socket.setTimeout(keepaliveInterval * 2)

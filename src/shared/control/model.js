@@ -55,7 +55,12 @@ export function onPropose (input) {
 
   const options = mutations[input.mutation](input) || {}
 
-  return {...input, ...options, stuff: clone(stuff)}
+  return {
+    token: input.token,
+    ...options,
+    stuff: clone(stuff),
+  }
+  // return {...input, ...options, stuff: clone(stuff)}
 }
 
 export default {

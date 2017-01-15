@@ -40,7 +40,7 @@ const actions = {
 export function onAction (input) {
   const {action, ...args} = input
 
-  console.log('action args', action, '\n', args)
+  console.log('action', action)
 
   let actionResult
 
@@ -62,7 +62,7 @@ export function onAction (input) {
     return
   }
 
-  console.log('action result', action, actionResult)
+  // console.log('action result', action, actionResult)
 
   return actionResult
 }
