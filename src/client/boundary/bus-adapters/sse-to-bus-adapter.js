@@ -8,7 +8,7 @@ const log = logConsole(logName)
 const logMessage = event =>
   [event.target.url, `readyState = ${event.target.readyState}`]
 
-const saveTokenToSession = message => {
+const saveTokenToSessionStorage = message => {
   const token = path(['data', 'token'], message)
   sessionStorage.setItem('tboToken', token)
 }
@@ -20,7 +20,7 @@ const toBus = sinks => {
     ::JSON.parse,
     when(
       pipe(prop('KA'), not),
-      pipe(tap(saveTokenToSession), adapter)),
+      pipe(tap(saveTokenToSessionStorage), adapter)),
   )
 }
 

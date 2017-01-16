@@ -1,6 +1,6 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import {renderToString} from 'inferno-server'
-import {pipe} from 'ramda'
+import {pipe, path} from 'ramda'
 import stateRepresentation, {validate} from '../../../shared/boundary/state-representation'
 import {getSink} from '../../../shared/boundary/connect-postal'
 import {BehaviorSubject} from 'rxjs/BehaviorSubject'
@@ -36,9 +36,36 @@ let index = new BehaviorSubject(markup())::skip(1)
 
 const actionSink = getSink({targets: ['actions'], logTag: logName})
 
+const cache = {}
+const saveInput = input => {
+  const streamID = path(['token', 'data', 'streamID'], input)
+  console.log('save input', streamID, input)
+  if (streamID) {
+    cache[streamID] = input
+  }
+}
+
 export async function renderString (ctx) {
+  const oldID = ctx.session.streamID
+  console.log('restore input', oldID, cache[oldID])
+  if (oldID && cache[oldID]) {
+    try {
+      ctx.session.serverInitToken = jwt.sign({data: {streamID: oldID}}, 'secret', {expiresIn: '30s'})
+      ctx.body = pipe(
+        stateRepresentation,
+        renderToString,
+        markup,
+      )(cache[oldID])
+    } catch (error) {
+      log(error)
+      ctx.status = 500
+      ctx.body = {message: error.message}
+    }
+    return
+  }
+
   const streamID = uuid()
-  const token = jwt.sign({streamID}, 'secret', {expiresIn: '60s'})
+  const token = jwt.sign({data: {streamID}}, 'secret', {expiresIn: '30s'})
 
   let sub = index
     ::_catch(error => {
@@ -50,6 +77,7 @@ export async function renderString (ctx) {
     })
     .subscribe(view => {
       ctx.session.serverInitToken = token
+      ctx.session.streamID = streamID
       ctx.body = view
       sub.unsubscribe()
       sub = undefined
@@ -59,9 +87,11 @@ export async function renderString (ctx) {
 }
 
 export function onStateRepresentation (input) {
-  if (input.broadcasterID) { return }
-
   try {
+    if (input.broadcasterID) { return }
+
+    saveInput(input)
+
     pipe(
       stateRepresentation,
       renderToString,

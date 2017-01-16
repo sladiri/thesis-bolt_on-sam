@@ -28,7 +28,7 @@ export const validate = validateAndLog({
 
 const sessionID = path(['streamID'])
 const token = path(['token'])
-const tokenID = pipe(token, path(['streamID']))
+const tokenID = pipe(token, path(['data', 'streamID']))
 const broadcasterID = path(['broadcasterID'])
 
 const restoreToken = session => message => {
@@ -72,7 +72,7 @@ export default topics => {
     const session = {}
     log('SSE connect', Object.keys(ctx.session))
     try {
-      const {streamID} = jwt.verify(ctx.session.serverInitToken, 'secret')
+      const {data: {streamID}} = jwt.verify(ctx.session.serverInitToken, 'secret')
       delete ctx.session.serverInitToken
       session.streamID = streamID
     } catch ({message}) {
@@ -87,7 +87,7 @@ export default topics => {
 
       const streamSub = source
         ::map(assocPath(['data', 'msgID'], msgID++))
-        ::_do(message => log('######## start', '\n', JSON.stringify({session}, null, ' '), '\n', JSON.stringify(message, null, '  '), '\n'))
+        // ::_do(message => log('######## start', '\n', JSON.stringify({session}, null, ' '), '\n', JSON.stringify(message, null, '  '), '\n'))
         ::map(path(['data']))
         ::filter(pipe(path(['init']), equals('server'), not))
         ::filter(message => sessionID(session) !== broadcasterID(message))
@@ -95,7 +95,7 @@ export default topics => {
         ::filter(message => sessionID(session) === tokenID(message) || broadcasterID(message))
         ::map(state)
         ::filter(pipe(isNil, not))
-        ::_do(message => log('========= to signToken =========>>\n', JSON.stringify({session}, null, '  '), '\n', JSON.stringify(message, null, '  '), '\n\n'))
+        // ::_do(message => log('========= to signToken =========>>\n', JSON.stringify({session}, null, '  '), '\n', JSON.stringify(message, null, '  '), '\n\n'))
         ::_do(saveTokenToSession(session))
         ::_do(pipe(
           pickAll(['error', 'token', 'view', 'stuff']),

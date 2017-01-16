@@ -20,7 +20,7 @@ const db = {
 
 const mapDB = db =>
   ({
-    data: clone({
+    model: clone({
       field: db.field,
       groups: db.groups,
     }),
@@ -38,7 +38,7 @@ const mutations = {
       return {noOp: true}
     }
 
-    token.userName = userName
+    token.data.userName = userName
   },
   postMessage ({group: groupName, message, token}) {
     let group

@@ -35,24 +35,25 @@ export function state (input) {
 
   if (input.noOp) { return }
 
-  const {token, data, ...options} = input
+  const {model, ...options} = input
+  const {token: {data}} = input
 
   const allowedActions = Object.keys(actions)
-  token.allowedActions = allowedActions
+  data.allowedActions = allowedActions
 
   const stuff = {}
 
-  stuff.field = data.field
-  stuff.groups = map(prop('name'), data.groups)
+  stuff.field = model.field
+  stuff.groups = map(prop('name'), model.groups)
 
-  stuff.streamID = token.streamID || 'no streamID'
-  stuff.userName = token.userName
-  stuff.group = (data.groups.find(group => group.members.indexOf(token.userName) >= 0) || {}).name
-  stuff.groupPosts = (data.groups.find(group => group.members.includes(token.userName)) || {}).posts || []
+  stuff.streamID = data.streamID || 'no streamID'
+  stuff.userName = data.userName
+  stuff.group = (model.groups.find(group => group.members.indexOf(data.userName) >= 0) || {}).name
+  stuff.groupPosts = (model.groups.find(group => group.members.includes(data.userName)) || {}).posts || []
 
-  const view = token.userName ? 'loggedIn' : 'initial'
+  const view = data.userName ? 'loggedIn' : 'initial'
 
-  return {...options, token, view, stuff}
+  return {...options, view, stuff}
 }
 
 export function onState (input) {

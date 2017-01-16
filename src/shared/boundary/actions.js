@@ -6,7 +6,7 @@ const logName = 'actions'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
-  required: ['token', 'action'],
+  required: ['action'],
   properties: {
     action: {
       enum: ['initServer', 'initClient', 'incrementField', 'userSession', 'broadcast', 'groupMessage'],
@@ -16,7 +16,7 @@ export const validate = validateAndLog({
 
 const checkAllowedActions = (action, token) => {
   if (!(action === 'initServer' || action === 'initClient')) {
-    const {allowedActions} = jwt.verify(token, 'secret')
+    const {data: {allowedActions}} = jwt.verify(token, 'secret')
     if (!allowedActions.includes(action)) {
       return false
     }
@@ -24,20 +24,24 @@ const checkAllowedActions = (action, token) => {
 }
 
 export const actions = {
-  initServer (args) {
-    // TODO: allow reuse of session after reload
-    // console.log(args)
-    // if (args.token) {
-    //   console.log(jwt.decode(args.token, 'secret'))
-    // }
+  initServer () {
     return {init: 'server'}
   },
-  initClient ({token}) {
-    const {streamID} = jwt.verify(token, 'secret')
-    return {init: 'client', token: jwt.sign({streamID}, 'secret', {expiresIn: '1y'})}
+  initClient ({token, savedToken}) {
+    let oldData = {}
+    if (savedToken) {
+      try {
+        oldData = jwt.verify(savedToken, 'secret').data || oldData
+      } catch (error) {
+        log('expired old token', error)
+      }
+    }
+    const initToken = token ? jwt.verify(token, 'secret') : null
+    const newData = initToken ? {...oldData, streamID: initToken.data.streamID} : oldData
+    return {init: 'client', token: jwt.sign({data: newData}, 'secret', {expiresIn: '1y'})}
   },
   broadcast ({token}) {
-    const {streamID} = jwt.verify(token, 'secret')
+    const {data: {streamID}} = jwt.verify(token, 'secret')
     return {broadcasterID: streamID}
   },
   incrementField ({arg}) {
@@ -56,38 +60,27 @@ export const actions = {
  * - Calls external API (eg. validation service)
 */
 export function onAction (input) {
-  const {action, ...args} = input
-
-  log('Action intent', action)
-
-  if (checkAllowedActions(action, args.token) === false) {
-    log('Forbidden client action', action, args.token.allowedActions)
-    return
-  }
-
-  let actionResult
-
   try {
-    actionResult = {
+    const {action, ...args} = input
+
+    log('Action intent', action)
+
+    if (checkAllowedActions(action, args.token) === false) {
+      log('Forbidden client action', action, args.token.allowedActions)
+      return
+    }
+
+    const actionResult = {
       token: input.token,
       ...(actions[action](args) || {}),
     }
-  } catch (error) {
-    debugger
-    log('Invalid client action', actionResult.error)
-    return
-  }
-
-  try {
     actionResult.token = jwt.verify(actionResult.token, 'secret')
+
+    return actionResult
   } catch (error) {
     debugger
-    return
+    log('Error processing action', error)
   }
-
-  // console.log('action result', action, actionResult)
-
-  return actionResult
 }
 
 export default {
