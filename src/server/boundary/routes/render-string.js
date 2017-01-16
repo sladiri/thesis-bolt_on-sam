@@ -24,10 +24,7 @@ const markup = html =>
   <!--<link rel="stylesheet" type="text/css" href="dist/main.css">-->
 </head>
 <body>
-  <div id="root">
-    <h2 style="position: absolute;right: 0;">static view</h2>
-    ${html || '<h2>no view</h2>'}
-  </div>
+  ${html || '<div id="state-representation"><h2 style="position: absolute;right: 0;">static view</h2><h2>no view</h2></div>'}
   <script>System.import('bolt_on-sam')</script>
 `
 

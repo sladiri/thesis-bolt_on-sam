@@ -7,7 +7,7 @@ import {getSink} from '../../shared/boundary/connect-postal'
 const logName = 'render-dom'
 const log = logConsole(logName)
 
-const domTarget = document.getElementById('root')
+const domTarget = document.getElementById('state-representation')
 
 function onStateRepresentation (input) {
   pipe(
