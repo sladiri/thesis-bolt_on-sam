@@ -3,7 +3,6 @@ import getRawBody from 'raw-body'
 import contentType from 'content-type'
 import {toBusAdapter} from '../../../shared/boundary/connect-postal'
 import {assocPath} from 'ramda'
-import jwt from 'jsonwebtoken'
 
 const logName = 'http-to-bus-adapter'
 const log = logConsole(logName)
