@@ -1,6 +1,7 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
 import {map, prop} from 'ramda'
+import {actions} from '../boundary/actions'
 
 const logName = 'state'
 const log = logConsole(logName)
@@ -34,9 +35,11 @@ export function state (input) {
 
   if (input.noOp) { return }
 
-  // decide, which actions are allowed ...
-
   const {token, data, ...options} = input
+
+  const allowedActions = Object.keys(actions)
+  token.allowedActions = allowedActions
+
   const stuff = {}
 
   stuff.field = data.field

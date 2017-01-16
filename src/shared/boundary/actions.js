@@ -14,7 +14,16 @@ export const validate = validateAndLog({
   },
 }, log)
 
-const actions = {
+const checkAllowedActions = (action, token) => {
+  if (!(action === 'initServer' || action === 'initClient')) {
+    const {allowedActions} = jwt.verify(token, 'secret')
+    if (!allowedActions.includes(action)) {
+      return false
+    }
+  }
+}
+
+export const actions = {
   initServer (args) {
     // TODO: allow reuse of session after reload
     // console.log(args)
@@ -31,7 +40,7 @@ const actions = {
     const {streamID} = jwt.verify(token, 'secret')
     return {broadcasterID: streamID}
   },
-  incrementField ({arg, token}) {
+  incrementField ({arg}) {
     return {mutation: 'increment', amount: arg}
   },
   userSession ({arg}) {
@@ -49,7 +58,12 @@ const actions = {
 export function onAction (input) {
   const {action, ...args} = input
 
-  console.log('action', action)
+  log('Action intent', action)
+
+  if (checkAllowedActions(action, args.token) === false) {
+    log('Forbidden client action', action, args.token.allowedActions)
+    return
+  }
 
   let actionResult
 
