@@ -8,8 +8,16 @@ const logName = 'render-dom'
 const log = logConsole(logName)
 
 const domTarget = document.getElementById('state-representation')
+let init = true
 
 function onStateRepresentation (input) {
+  if (init) {
+    while (domTarget.firstChild) {
+      domTarget.removeChild(domTarget.firstChild)
+    }
+    init = false
+  }
+
   pipe(
     stateRepresentation,
     curry(render)(__, domTarget),
