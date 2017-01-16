@@ -2,6 +2,6 @@
 {
   "files.exclude": {
     "**/.git": true,
-    "**/public/src": true
+    "**/public/src*": true
   }
 }
