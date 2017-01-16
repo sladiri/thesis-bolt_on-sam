@@ -38,7 +38,7 @@ const actionSink = getSink({targets: ['actions'], logTag: logName})
 
 export async function renderString (ctx) {
   const streamID = uuid()
-  const token = jwt.sign({streamID}, 'secret', {expiresIn: '600s'})
+  const token = jwt.sign({streamID}, 'secret', {expiresIn: '60s'})
 
   let sub = index
     ::_catch(error => {
