@@ -1,6 +1,6 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import {toBusAdapter} from '../../../shared/boundary/connect-postal'
-import {pipe, when, prop, not, compose} from 'ramda'
+import {pipe, when, prop, not, tap, path} from 'ramda'
 
 const logName = 'sse-to-bus-adapter'
 const log = logConsole(logName)
@@ -8,14 +8,19 @@ const log = logConsole(logName)
 const logMessage = event =>
   [event.target.url, `readyState = ${event.target.readyState}`]
 
+const saveTokenToSession = message => {
+  const token = path(['data', 'token'], message)
+  sessionStorage.setItem('tboToken', token)
+}
+
 const toBus = sinks => {
   const adapter = toBusAdapter({sinks, logTag: logName})
   return pipe(
     prop('data'),
     ::JSON.parse,
     when(
-      compose(not, prop('KA')),
-      adapter),
+      pipe(prop('KA'), not),
+      pipe(tap(saveTokenToSession), adapter)),
   )
 }
 

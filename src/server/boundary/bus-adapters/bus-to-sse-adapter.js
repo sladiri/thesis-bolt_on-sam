@@ -26,18 +26,18 @@ export const validate = validateAndLog({
   },
 }, log)
 
-const sessionID = path(['session', 'streamID'])
+const sessionID = path(['streamID'])
 const token = path(['token'])
 const tokenID = pipe(token, path(['streamID']))
 const broadcasterID = path(['broadcasterID'])
 
-const restoreToken = ctx => message => {
-  message.token = token(ctx.session)
+const restoreToken = session => message => {
+  message.token = token(session)
   return message
 }
 
-const saveTokenToSession = ctx => message => {
-  ctx.session.token = token(message)
+const saveTokenToSession = session => message => {
+  session.token = token(message)
 }
 
 const signToken = message => {
@@ -69,11 +69,12 @@ const broadcast = message => {
 let msgID = 1001
 export default topics => {
   return async function busToSseAdapter (ctx) {
+    const session = {}
     log('SSE connect', Object.keys(ctx.session))
     try {
       const {streamID} = jwt.verify(ctx.session.serverInitToken, 'secret')
       delete ctx.session.serverInitToken
-      ctx.session.streamID = streamID
+      session.streamID = streamID
     } catch ({message}) {
       clientErrorLog(message)
       ctx.status = 403
@@ -86,15 +87,16 @@ export default topics => {
 
       const streamSub = source
         ::map(assocPath(['data', 'msgID'], msgID++))
-        ::_do(message => log('######## start', '\n', JSON.stringify({sess: ctx.session}, null, ' '), '\n', JSON.stringify(message, null, '  '), '\n'))
+        ::_do(message => log('######## start', '\n', JSON.stringify({session}, null, ' '), '\n', JSON.stringify(message, null, '  '), '\n'))
         ::map(path(['data']))
         ::filter(pipe(path(['init']), equals('server'), not))
-        ::filter(message => sessionID(ctx) !== broadcasterID(message))
-        ::map(when(broadcasterID, restoreToken(ctx)))
-        ::filter(message => sessionID(ctx) === tokenID(message) || broadcasterID(message))
+        ::filter(message => sessionID(session) !== broadcasterID(message))
+        ::map(when(broadcasterID, restoreToken(session)))
+        ::filter(message => sessionID(session) === tokenID(message) || broadcasterID(message))
         ::map(state)
         ::filter(pipe(isNil, not))
-        ::_do(message => log('========= to signToken =========>>\n', JSON.stringify({sess: ctx.session}, null, '  '), '\n', JSON.stringify(message, null, '  '), '\n\n'))
+        ::_do(message => log('========= to signToken =========>>\n', JSON.stringify({session}, null, '  '), '\n', JSON.stringify(message, null, '  '), '\n\n'))
+        ::_do(saveTokenToSession(session))
         ::_do(pipe(
           pickAll(['error', 'token', 'view', 'stuff']),
           signToken,
@@ -105,7 +107,6 @@ export default topics => {
           )),
         ))
         ::_do(broadcast)
-        ::_do(saveTokenToSession(ctx))
         ::_catch(error => { console.log('bus2sse error', logName, error); debugger })
         .subscribe()
 

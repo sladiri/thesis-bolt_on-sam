@@ -33,4 +33,7 @@ export default {
   handler: onStateRepresentation,
 }
 
-setTimeout(() => { getSink({targets: ['actions'], logTag: logName})({action: 'initClient'}) }, 200)
+setTimeout(() => {
+  const savedToken = sessionStorage.getItem('tboToken')
+  getSink({targets: ['actions'], logTag: logName})({action: 'initClient', savedToken})
+}, 200)
