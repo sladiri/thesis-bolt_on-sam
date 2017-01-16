@@ -12,7 +12,7 @@ const domTarget = document.getElementById('root')
 function onStateRepresentation (input) {
   pipe(
     stateRepresentation,
-    curry(render)(__, domTarget)
+    curry(render)(__, domTarget),
   )(input)
 
   log('rendered')

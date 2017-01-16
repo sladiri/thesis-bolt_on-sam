@@ -32,7 +32,6 @@ const markup = html =>
 `
 
 let index = new BehaviorSubject(markup())::skip(1)
-let sub
 
 const actionSink = getSink({targets: ['actions'], logTag: logName})
 
@@ -40,7 +39,7 @@ export async function renderString (ctx) {
   const streamID = `${Math.random().toString(36).substr(2, 16)}`
   const token = jwt.sign({streamID}, 'secret', {expiresIn: '60s'})
 
-  sub = index
+  let sub = index
     ::_catch(error => {
       log(error)
       ctx.status = 500

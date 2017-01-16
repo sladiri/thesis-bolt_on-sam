@@ -69,7 +69,7 @@ const broadcast = message => {
 let msgID = 1001
 export default topics => {
   return async function busToSseAdapter (ctx) {
-    console.log('SSE connect xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', Object.keys(ctx.session))
+    log('SSE connect', Object.keys(ctx.session))
     try {
       const {streamID} = jwt.verify(ctx.session.serverInitToken, 'secret')
       delete ctx.session.serverInitToken
@@ -86,7 +86,7 @@ export default topics => {
 
       const streamSub = source
         ::map(assocPath(['data', 'msgID'], msgID++))
-        ::_do(message => console.log('######## start', '\n', {sess: ctx.session}, '\n', message, '\n'))
+        ::_do(message => log('######## start', '\n', JSON.stringify({sess: ctx.session}, null, ' '), '\n', JSON.stringify(message, null, '  '), '\n'))
         ::map(path(['data']))
         ::filter(pipe(path(['init']), equals('server'), not))
         ::filter(message => sessionID(ctx) !== broadcasterID(message))
@@ -94,7 +94,7 @@ export default topics => {
         ::filter(message => sessionID(ctx) === tokenID(message) || broadcasterID(message))
         ::map(state)
         ::filter(pipe(isNil, not))
-        ::_do(message => console.log('========= to signToken =========>>\n', {sess: ctx.session}, '\n', message, '\n\n'))
+        ::_do(message => log('========= to signToken =========>>\n', JSON.stringify({sess: ctx.session}, null, '  '), '\n', JSON.stringify(message, null, '  '), '\n\n'))
         ::_do(pipe(
           pickAll(['error', 'token', 'view', 'stuff']),
           signToken,
