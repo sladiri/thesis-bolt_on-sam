@@ -6,7 +6,7 @@ const logName = 'actions'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
-  required: ['action'],
+  required: ['token', 'action'],
   properties: {
     action: {
       enum: ['initServer', 'initClient', 'incrementField', 'userSession', 'broadcast', 'groupMessage'],
@@ -27,17 +27,25 @@ export const actions = {
   initServer () {
     return {init: 'server'}
   },
-  initClient ({token, savedToken}) {
+  initClient ({token, savedToken, failedCache}) {
+    const initToken = jwt.verify(token, 'secret')
+    const streamID = initToken.data.streamID
+
+    if (failedCache) {
+      log('Initclient - failed cache.')
+      return {init: 'client', token: jwt.sign({data: {streamID}}, 'secret', {expiresIn: '1y'})}
+    }
+
     let oldData = {}
     if (savedToken) {
       try {
         oldData = jwt.verify(savedToken, 'secret').data || oldData
+        log('Initclient - reuse old data.')
       } catch (error) {
-        log('expired old token', error)
+        log('Initclient - expired old token', error)
       }
     }
-    const initToken = token ? jwt.verify(token, 'secret') : null
-    const newData = initToken ? {...oldData, streamID: initToken.data.streamID} : oldData
+    const newData = {...oldData, streamID}
     return {init: 'client', token: jwt.sign({data: newData}, 'secret', {expiresIn: '1y'})}
   },
   broadcast ({token}) {

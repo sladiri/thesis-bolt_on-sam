@@ -39,17 +39,18 @@ const actionSink = getSink({targets: ['actions'], logTag: logName})
 const cache = {}
 const saveInput = input => {
   const streamID = path(['token', 'data', 'streamID'], input)
-  console.log('save input', streamID, input)
+  log('Cache input data.', streamID)
   if (streamID) {
-    cache[streamID] = input
+    cache[streamID] = input // TODO limit memory usage
   }
 }
 
 export async function renderString (ctx) {
   const oldID = ctx.session.streamID
-  console.log('restore input', oldID, cache[oldID])
   if (oldID && cache[oldID]) {
+    log('Restore input data', oldID)
     try {
+      ctx.session.failedCache = false
       ctx.session.serverInitToken = jwt.sign({data: {streamID: oldID}}, 'secret', {expiresIn: '30s'})
       ctx.body = pipe(
         stateRepresentation,
@@ -62,6 +63,9 @@ export async function renderString (ctx) {
       ctx.body = {message: error.message}
     }
     return
+  } else if (oldID && !cache[oldID]) {
+    ctx.session.failedCache = true
+    log('Missing input data cache', oldID)
   }
 
   const streamID = uuid()
