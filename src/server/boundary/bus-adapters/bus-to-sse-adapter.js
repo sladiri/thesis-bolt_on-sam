@@ -110,15 +110,15 @@ export default topics => {
         .subscribe()
 
       const {socket} = ctx
-      const keepaliveInterval = 1000 * 60 * 5
+      const keepaliveInterval = 1000 * 60 * 1
 
       const keepalive = setInterval(
         pipe(() => `data: ${JSON.stringify({KA: true})}\n\n`, ::socketStream.write),
         keepaliveInterval)
 
-      socket.setTimeout(keepaliveInterval * 2)
-
-      ctx.res.socket.setTimeout(keepaliveInterval * 2)
+      // TODO increase socket timeout
+      // socket.setTimeout(keepaliveInterval * 2)
+      // ctx.res.socket.setTimeout(keepaliveInterval * 2)
 
       const onClose = what => {
         return function onCloseHandler (message) {
