@@ -7,6 +7,7 @@ import {BehaviorSubject} from 'rxjs/BehaviorSubject'
 import {_catch} from 'rxjs/operator/catch'
 import {skip} from 'rxjs/operator/skip'
 import jwt from 'jsonwebtoken'
+import uuid from 'uuid/v4'
 
 const logName = 'render-index'
 const log = logConsole(logName)
@@ -24,7 +25,10 @@ const markup = html =>
   <!--<link rel="stylesheet" type="text/css" href="dist/main.css">-->
 </head>
 <body>
-  ${html || '<div id="state-representation"><h2 style="position: absolute;right: 0;">static view</h2><h2>no view</h2></div>'}
+  ${
+    html ||
+    '<div id="state-representation"><h2 style="position: absolute;right: 0;">static view</h2><h2>no view</h2></div>'
+  }
   <script>System.import('bolt_on-sam')</script>
 `
 
@@ -33,8 +37,8 @@ let index = new BehaviorSubject(markup())::skip(1)
 const actionSink = getSink({targets: ['actions'], logTag: logName})
 
 export async function renderString (ctx) {
-  const streamID = `${Math.random().toString(36).substr(2, 16)}`
-  const token = jwt.sign({streamID}, 'secret', {expiresIn: '60s'})
+  const streamID = uuid()
+  const token = jwt.sign({streamID}, 'secret', {expiresIn: '600s'})
 
   let sub = index
     ::_catch(error => {
@@ -45,7 +49,6 @@ export async function renderString (ctx) {
       sub = undefined
     })
     .subscribe(view => {
-      ctx.streamID = undefined
       ctx.session.serverInitToken = token
       ctx.body = view
       sub.unsubscribe()

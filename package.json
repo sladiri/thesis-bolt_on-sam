@@ -76,7 +76,8 @@
     "ramda": "^0.23.0",
     "raw-body": "^2.1.7",
     "rxjs": "^5.0.2",
-    "spdy": "^3.4.4"
+    "spdy": "^3.4.4",
+    "uuid": "^3.0.1"
   },
   "jspm": {
     "name": "bolt_on-sam",
