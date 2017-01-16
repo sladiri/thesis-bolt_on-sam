@@ -59,9 +59,7 @@ export async function renderString (ctx) {
 }
 
 export function onStateRepresentation (input) {
-  if (input.broadcasterID) {
-    return
-  }
+  if (input.broadcasterID) { return }
 
   try {
     pipe(
