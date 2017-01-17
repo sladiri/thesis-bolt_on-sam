@@ -52,7 +52,7 @@ export async function renderString (ctx) {
     log('Restore input data', oldID)
     try {
       ctx.session.failedCache = false
-      ctx.session.serverInitToken = jwt.sign({data: {streamID: oldID}}, 'secret', {expiresIn: '30s'})
+      ctx.session.serverInitToken = jwt.sign({data: {streamID: oldID}}, 'secret', {expiresIn: '60s'})
       ctx.body = pipe(
         stateRepresentation,
         renderToString,
@@ -70,7 +70,7 @@ export async function renderString (ctx) {
   }
 
   const streamID = uuid()
-  const token = jwt.sign({data: {streamID}}, 'secret', {expiresIn: '30s'})
+  const token = jwt.sign({data: {streamID}}, 'secret', {expiresIn: '60s'})
 
   let sub = index
     ::_catch(error => {
