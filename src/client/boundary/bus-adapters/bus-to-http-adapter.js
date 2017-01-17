@@ -2,14 +2,20 @@ import {logConsole} from '../../../shared/boundary/logger'
 import {getSource} from '../../../shared/boundary/connect-postal'
 import {map} from 'rxjs/operator/map'
 import {_catch} from 'rxjs/operator/catch'
+import {from} from 'rxjs/observable/from'
+import {mergeMap} from 'rxjs/operator/mergeMap'
+import {pipe, identity} from 'ramda'
 
 const logName = 'bus-to-http-adapter'
 const log = logConsole(logName)
 
-function busToBody (message) {
-  log('map action data')
-  return JSON.stringify(message)
-}
+const createFetchOptions = message =>
+  ({
+    ...defaultOptions,
+    body: JSON.stringify(message),
+  })
+
+const createFetchRequest = url => options => new Request(url, options)
 
 const defaultOptions = {
   credentials: 'same-origin',
@@ -21,20 +27,17 @@ const defaultOptions = {
 }
 
 export default function busToHttpAdapter ({url, targets}) {
-  function sendHttp (body) {
-    fetch(new Request(url, {...defaultOptions, body}))
-      .then(response => {
-        log('got response from action', response.status)
-      })
-      .catch(log)
-  }
-
   let {postalSubs, source} = getSource({topics: targets, logTag: logName})
+
   source
-    ::map(busToBody)
+    ::map(createFetchOptions)
+    ::map(createFetchRequest(url))
+    ::mergeMap(pipe(identity, ::window.fetch, from)) // bug, must provide some function before fetch
     ::_catch(error => {
       postalSubs.forEach(sub => { sub.unsubscribe() })
-      log(logName, error)
+      log('Unsubscribed', error)
     })
-    .subscribe(sendHttp)
+    .subscribe(response => {
+      log('got response from action', response.status)
+    })
 }
