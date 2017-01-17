@@ -34,6 +34,6 @@ export default {
 }
 
 setTimeout(() => {
-  const savedToken = sessionStorage.getItem('tboToken')
+  const savedToken = localStorage.getItem('tboToken')
   getSink({targets: ['actions'], logTag: logName})({action: 'initClient', savedToken})
 }, 200)
