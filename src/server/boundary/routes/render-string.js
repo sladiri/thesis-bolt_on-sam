@@ -67,7 +67,6 @@ export async function renderString (ctx) {
     }
     return
   } else if (oldID && !cache[oldID]) {
-    ctx.session.failedCache = true
     log('Missing input data cache', oldID)
   }
 
@@ -84,6 +83,7 @@ export async function renderString (ctx) {
       sub = undefined
     })
     .subscribe(view => {
+      ctx.session.failedCache = true
       ctx.session.serverInitToken = token
       ctx.session.actionToken = actionToken
       ctx.session.streamID = streamID

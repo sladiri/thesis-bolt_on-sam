@@ -70,22 +70,22 @@ export const actions = {
 */
 export function onAction (input) {
   try {
-    const {action, ...args} = input
+    const {action} = input
 
     jwt.verify(input.actionToken, 'secret') // TODO blcaklist used tokens
     input.actionToken = jwt.sign({id: uuid()}, 'secret', {expiresIn: '1y'})
 
     log('Action intent', action)
 
-    if (checkAllowedActions(action, args.token) === false) {
-      log('Forbidden client action', action, args.token.allowedActions)
+    if (checkAllowedActions(action, input.token) === false) {
+      log('Forbidden client action', action, input.token.allowedActions)
       return
     }
 
     const actionResult = {
       token: input.token,
       actionToken: input.actionToken,
-      ...(actions[action](args) || {}),
+      ...(actions[action](input) || {}),
     }
     actionResult.token = jwt.verify(actionResult.token, 'secret')
 
