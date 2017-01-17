@@ -46,6 +46,7 @@ const saveInput = input => {
 }
 
 export async function renderString (ctx) {
+  // TODO store more in initToken than just streamID, to identify client
   const oldID = ctx.session.streamID
 
   if (oldID && cache[oldID]) {
