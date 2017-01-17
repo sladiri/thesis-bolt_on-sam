@@ -47,6 +47,7 @@ const saveInput = input => {
 
 export async function renderString (ctx) {
   const oldID = ctx.session.streamID
+
   if (oldID && cache[oldID]) {
     log('Restore input data', oldID)
     try {
