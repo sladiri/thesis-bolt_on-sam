@@ -54,6 +54,7 @@ export async function renderString (ctx) {
     try {
       ctx.session.failedCache = false
       ctx.session.serverInitToken = jwt.sign({data: {streamID: oldID}}, 'secret', {expiresIn: '60s'})
+      ctx.session.actionToken = jwt.sign({id: uuid()}, 'secret', {expiresIn: '60s'})
       ctx.body = pipe(
         stateRepresentation,
         renderToString,
@@ -72,6 +73,7 @@ export async function renderString (ctx) {
 
   const streamID = uuid()
   const token = jwt.sign({data: {streamID}}, 'secret', {expiresIn: '60s'})
+  const actionToken = jwt.sign({id: uuid()}, 'secret', {expiresIn: '60s'})
 
   let sub = index
     ::_catch(error => {
@@ -83,13 +85,14 @@ export async function renderString (ctx) {
     })
     .subscribe(view => {
       ctx.session.serverInitToken = token
+      ctx.session.actionToken = actionToken
       ctx.session.streamID = streamID
       ctx.body = view
       sub.unsubscribe()
       sub = undefined
     })
 
-  actionSink({action: 'initServer', token})
+  actionSink({action: 'initServer', token, actionToken})
 }
 
 export function onStateRepresentation (input) {

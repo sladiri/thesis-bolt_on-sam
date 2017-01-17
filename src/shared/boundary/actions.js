@@ -1,6 +1,7 @@
 import {logConsole} from '../boundary/logger'
 import validateAndLog from '../boundary/json-schema'
 import jwt from 'jsonwebtoken'
+import uuid from 'uuid/v4'
 
 const logName = 'actions'
 const log = logConsole(logName)
@@ -71,6 +72,9 @@ export function onAction (input) {
   try {
     const {action, ...args} = input
 
+    jwt.verify(input.actionToken, 'secret') // TODO blcaklist used tokens
+    input.actionToken = jwt.sign({id: uuid()}, 'secret', {expiresIn: '1y'})
+
     log('Action intent', action)
 
     if (checkAllowedActions(action, args.token) === false) {
@@ -80,9 +84,11 @@ export function onAction (input) {
 
     const actionResult = {
       token: input.token,
+      actionToken: input.actionToken,
       ...(actions[action](args) || {}),
     }
     actionResult.token = jwt.verify(actionResult.token, 'secret')
+
 
     return actionResult
   } catch (error) {

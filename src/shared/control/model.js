@@ -63,7 +63,7 @@ export function onPropose (input) {
 
   const options = mutations[input.mutation](input) || {}
 
-  return {token: input.token, ...options, ...mapDB(db)}
+  return {...input, ...options, ...mapDB(db)}
 }
 
 export default {

@@ -57,11 +57,16 @@ const fakePostalMessage = data => {
   }
 }
 
+const broadcastSink = getSink({targets: ['actions'], logTag: logName})
 const broadcast = message => {
   if (message.broadcast) {
     const token = jwt.sign(message.token, 'secret')
     setTimeout(() => {
-      getSink({targets: ['actions'], logTag: logName})({action: 'broadcast', token})
+      broadcastSink({
+        action: 'broadcast',
+        token,
+        actionToken: message.actionToken,
+      })
     }, 0)
   }
 }
@@ -98,7 +103,7 @@ export default topics => {
         // ::_do(message => log('========= to signToken =========>>\n', JSON.stringify({session}, null, '  '), '\n', JSON.stringify(message, null, '  '), '\n\n'))
         ::_do(saveTokenToSession(session))
         ::_do(pipe(
-          pickAll(['error', 'token', 'view', 'stuff']),
+          pickAll(['error', 'token', 'actionToken', 'view', 'stuff']),
           signToken,
           fakePostalMessage,
           when(validate, pipe(

@@ -46,11 +46,14 @@ export default async function httpToBusAdapter (ctx) {
   }
 
   const token = ctx.session.serverInitToken
+  const actionToken = ctx.session.actionToken
   const failedCache = ctx.session.failedCache
   if (token) {
     delete ctx.session.serverInitToken
+    delete ctx.session.actionToken
     delete ctx.session.failedCache
     data = assocPath(['data', 'token'], token, data)
+    data = assocPath(['data', 'actionToken'], actionToken, data)
     data = assocPath(['data', 'failedCache'], failedCache, data)
   }
 

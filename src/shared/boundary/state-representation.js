@@ -113,7 +113,13 @@ export default (input) => {
     input.stack = input.error.stack
   }
 
-  const signal = (action, arg) => actionSink({token: input.token, action, arg})
+  const signal = (action, arg) =>
+    actionSink({
+      token: input.token,
+      actionToken: input.actionToken,
+      action,
+      arg,
+    })
 
   const {view, ...args} = input
   return views[view]({...args, signal})
