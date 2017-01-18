@@ -89,11 +89,10 @@ export function onAction (input) {
     }
     actionResult.token = jwt.verify(actionResult.token, 'secret')
 
-
     return actionResult
   } catch (error) {
-    debugger
     log('Error processing action', error)
+    return {error}
   }
 }
 

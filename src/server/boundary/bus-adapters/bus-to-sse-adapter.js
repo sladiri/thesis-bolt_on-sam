@@ -75,11 +75,12 @@ let msgID = 1001
 export default topics => {
   return async function busToSseAdapter (ctx) {
     const session = {}
-    log('SSE connect', Object.keys(ctx.session))
+
     try {
       const {data: {streamID}} = jwt.verify(ctx.session.serverInitToken, 'secret')
       delete ctx.session.serverInitToken
       session.streamID = streamID
+      log('SSE connect', streamID)
     } catch ({message}) {
       clientErrorLog(message)
       ctx.status = 403
@@ -92,7 +93,6 @@ export default topics => {
 
       const streamSub = source
         ::map(assocPath(['data', 'msgID'], msgID++))
-        // ::_do(message => log('######## start', '\n', JSON.stringify({session}, null, ' '), '\n', JSON.stringify(message, null, '  '), '\n'))
         ::map(path(['data']))
         ::filter(pipe(path(['init']), equals('server'), not))
         ::filter(message => sessionID(session) !== broadcasterID(message))
@@ -100,7 +100,6 @@ export default topics => {
         ::filter(message => sessionID(session) === tokenID(message) || broadcasterID(message))
         ::map(state)
         ::filter(pipe(isNil, not))
-        // ::_do(message => log('========= to signToken =========>>\n', JSON.stringify({session}, null, '  '), '\n', JSON.stringify(message, null, '  '), '\n\n'))
         ::_do(saveTokenToSession(session))
         ::_do(pipe(
           pickAll(['error', 'token', 'actionToken', 'view', 'stuff']),
@@ -112,7 +111,7 @@ export default topics => {
           )),
         ))
         ::_do(broadcast)
-        ::_catch(error => { console.log('bus2sse error', logName, error); debugger })
+        ::_catch(error => { console.error('bus2sse error', logName, error) })
         .subscribe()
 
       const {socket} = ctx
@@ -148,7 +147,6 @@ export default topics => {
     } catch (error) {
       log(error)
       ctx.status = 500
-      debugger
     }
   }
 }

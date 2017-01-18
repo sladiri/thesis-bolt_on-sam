@@ -38,7 +38,7 @@ const subscribe = ({sink, logTag}) => {
       callback: function busToStreamHandler (data, envelope) {
         sink
           ::_do(() => { subscribeLog(`subscription got message on [${topic}]`) })
-          ::_catch(error => { console.log('subscribe got error', logTag, error); debugger })
+          ::_catch(error => { console.error('subscribe got error', logTag, error) })
           .next({data, envelope})
       },
     })
@@ -53,7 +53,7 @@ export function getSource ({topics, logTag}) {
   return {
     postalSubs,
     source: sink.asObservable()
-      ::_catch(error => { console.log('getSource got error', logTag, error); debugger }),
+      ::_catch(error => { console.error('getSource got error', logTag, error) }),
   }
 }
 
@@ -85,8 +85,7 @@ export function connect ({topics, logTag, validate, handler, targets = []}) {
     })
     ::map(getSink({targets, logTag}))
     ::_catch(error => {
-      console.log('connect got error', logTag, targets, error)
-      debugger
+      console.error('connect got error', logTag, targets, error)
       return Promise.reject()
     })
 
