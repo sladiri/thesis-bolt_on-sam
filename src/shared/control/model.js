@@ -12,8 +12,8 @@ const clone = obj => JSON.parse(JSON.stringify(obj))
 const db = {
   field: 42,
   groups: [
-    {name: 'admin', members: ['anton'], posts: []},
-    {name: 'group-A', members: ['berta', 'caesar', 'dora'], posts: []},
+    {name: 'admin', members: ['anton', 'berta'], posts: []},
+    {name: 'group-A', members: ['admin', 'berta', 'caesar', 'dora'], posts: []},
   ],
   users: ['anton', 'berta', 'caesar', 'dora'],
 }
@@ -23,6 +23,7 @@ const mapDB = db =>
     model: clone({
       field: db.field,
       groups: db.groups,
+      users: db.users,
     }),
   })
 
@@ -39,6 +40,7 @@ const mutations = {
     }
 
     token.data.userName = userName
+    token.data.isAdmin = db.groups.find(group => group.name === 'admin').members.includes(userName)
   },
   postMessage ({group: groupName, message, token}) {
     let group
@@ -47,6 +49,23 @@ const mutations = {
     }
 
     group.posts.push(message)
+    return {broadcast: true}
+  },
+  toggleGroup ({group: groupName, user: userName, token}) {
+    let group
+    if (
+      !token.data.isAdmin ||
+      !(group = db.groups.find(group => group.name === groupName)) ||
+      !db.users.includes(userName)
+    ) {
+      return {noOp: true}
+    }
+    const memberIndex = group.members.indexOf(userName)
+    if (memberIndex >= 0) {
+      group.members.splice(memberIndex, 1)
+    } else {
+      group.members.push(userName)
+    }
     return {broadcast: true}
   },
 }

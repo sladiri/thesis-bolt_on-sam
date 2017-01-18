@@ -10,7 +10,15 @@ export const validate = validateAndLog({
   required: ['token', 'action'],
   properties: {
     action: {
-      enum: ['initServer', 'initClient', 'incrementField', 'userSession', 'broadcast', 'groupMessage'],
+      enum: [
+        'initServer',
+        'initClient',
+        'incrementField',
+        'userSession',
+        'broadcast',
+        'groupMessage',
+        'toggleGroup',
+      ],
     },
   },
 }, log)
@@ -61,6 +69,9 @@ export const actions = {
   },
   groupMessage ({arg: {group, message}}) {
     return {mutation: 'postMessage', group, message}
+  },
+  toggleGroup ({arg: {group, user}}) {
+    return {mutation: 'toggleGroup', group, user}
   },
 }
 

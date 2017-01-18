@@ -55,6 +55,19 @@ const fields = (stuff, signal) =>
     h('span', `field: ${stuff.field} - `), incrementButton(stuff, signal), h('br'),
   ])
 
+const userActionButton = (stuff, signal, user) =>
+  h('button', {
+    onclick () { signal('toggleGroup', {user, group: 'admin'}) },
+  }, 'toggle [group-A] member')
+
+const adminActions = (stuff, signal) =>
+  h('span', [
+    'Users: ',
+    ...stuff.users
+      .filter(user => user !== stuff.userName)
+      .map(user => h('span', [user, userActionButton(stuff, signal, user)])),
+  ])
+
 const userSessionButton = (stuff, signal, logout) =>
   h('button', {
     onclick () {
@@ -98,6 +111,7 @@ const views = {
         h('span', 'Group Name: '), h('span', stuff.group), h('br'),
         h('ul', stuff.groups.map(group => h('li', [messageButton(signal, group, `${Math.random()}`)]))),
         h('ul', stuff.groupPosts.map(post => h('li', post))),
+        stuff.isAdmin === true ? adminActions(stuff, signal) : undefined,
       ]),
       fields(stuff, signal),
       list(),
