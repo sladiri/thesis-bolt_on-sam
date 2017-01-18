@@ -21,11 +21,10 @@ const markup = html =>
   <link rel="icon" href="/public/favicon.ico" />
   <script src="/public/jspm_packages/system.js"></script>
   <script src="/public/jspm.config.js"></script>
-  <script src="/public/dist/bundle.js"></script>
   <!--<link rel="stylesheet" type="text/css" href="dist/main.css">-->
 </head>
 <body>
-  ${html + '<h2 style="position: absolute;right: 0;">static view</h2>' || '<h2>no view</h2>'}
+  ${html}
   <script>System.import('bolt_on-sam')</script>
 `
 
