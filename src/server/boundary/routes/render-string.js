@@ -25,10 +25,7 @@ const markup = html =>
   <!--<link rel="stylesheet" type="text/css" href="dist/main.css">-->
 </head>
 <body>
-  ${
-    html ||
-    '<div id="state-representation"><h2 style="position: absolute;right: 0;">static view</h2><h2>no view</h2></div>'
-  }
+  ${html + '<h2 style="position: absolute;right: 0;">static view</h2>' || '<h2>no view</h2>'}
   <script>System.import('bolt_on-sam')</script>
 `
 
@@ -45,16 +42,19 @@ const saveInput = input => {
   }
 }
 
+const createToken = payload => jwt.sign(payload, 'secret', {expiresIn: '60s'})
+
 export async function renderString (ctx) {
   // TODO store more in initToken than just streamID, to identify client
   const oldID = ctx.session.streamID
+  const initActionID = uuid()
 
   if (oldID && cache[oldID]) {
     log('Restore input data', oldID)
     try {
       ctx.session.failedCache = false
-      ctx.session.serverInitToken = jwt.sign({data: {streamID: oldID}}, 'secret', {expiresIn: '60s'})
-      ctx.session.actionToken = jwt.sign({id: uuid()}, 'secret', {expiresIn: '60s'})
+      ctx.session.serverInitToken = createToken({data: {streamID: oldID}})
+      ctx.session.actionToken = createToken({id: initActionID})
       ctx.body = pipe(
         stateRepresentation,
         renderToString,
@@ -71,8 +71,8 @@ export async function renderString (ctx) {
   }
 
   const streamID = uuid()
-  const token = jwt.sign({data: {streamID}}, 'secret', {expiresIn: '60s'})
-  const actionToken = jwt.sign({id: uuid()}, 'secret', {expiresIn: '60s'})
+  const token = createToken({data: {streamID}})
+  const actionToken = createToken({id: initActionID})
 
   let sub = index
     ::_catch(error => {
