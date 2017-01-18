@@ -53,6 +53,8 @@ export function state (input) {
   stuff.isAdmin = data.isAdmin
   stuff.users = stuff.isAdmin && model.users
 
+  stuff.broadcastAction = options.broadcastAction
+
   const view = data.userName ? 'loggedIn' : 'initial'
 
   return {...options, view, stuff}

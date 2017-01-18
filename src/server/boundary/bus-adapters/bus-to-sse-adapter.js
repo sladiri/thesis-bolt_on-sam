@@ -54,6 +54,7 @@ const broadcastAction = message => {
   setTimeout(() => {
     broadcastSink({
       action: 'broadcast',
+      broadcastAction: message.broadcastAction,
       token: jwt.sign(message.token, 'secret'),
       actionToken: message.actionToken,
     })

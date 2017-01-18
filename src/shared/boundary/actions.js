@@ -57,9 +57,9 @@ export const actions = {
     const newData = {...oldData, streamID}
     return {init: 'client', token: jwt.sign({data: newData}, 'secret', {expiresIn: '1y'})}
   },
-  broadcast ({token}) {
+  broadcast ({broadcastAction, token}) {
     const {data: {streamID}} = jwt.verify(token, 'secret')
-    return {broadcasterID: streamID}
+    return {broadcastAction, broadcasterID: streamID}
   },
   incrementField ({arg}) {
     return {mutation: 'increment', amount: arg}

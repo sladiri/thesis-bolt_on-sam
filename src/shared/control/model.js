@@ -28,11 +28,11 @@ const mapDB = db =>
   })
 
 const mutations = {
-  increment ({amount}) {
+  increment ({amount, mutation}) {
     if (!amount) { return {noOp: true} }
 
     db.field += amount
-    return {broadcast: true}
+    return {broadcast: true, broadcastAction: mutation}
   },
   userSession ({userName, token}) {
     if (!(userName === null || db.users.includes(userName))) {
