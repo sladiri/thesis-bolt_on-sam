@@ -66,7 +66,7 @@ const mutations = {
     } else {
       group.members.push(userName)
     }
-    return {broadcast: true}
+    // return {broadcast: true}
   },
 }
 
