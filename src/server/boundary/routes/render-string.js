@@ -21,6 +21,7 @@ const markup = html =>
   <link rel="icon" href="/public/favicon.ico" />
   <script src="/public/jspm_packages/system.js"></script>
   <script src="/public/jspm.config.js"></script>
+  <script src="/public/dist/bundle.js"></script>
   <!--<link rel="stylesheet" type="text/css" href="dist/main.css">-->
 </head>
 <body>
