@@ -30,15 +30,7 @@ const sessionID = path(['streamID'])
 const token = path(['token'])
 const tokenID = pipe(token, path(['data', 'streamID']))
 const broadcasterID = path(['broadcasterID'])
-
-const restoreToken = session => message => {
-  message.token = token(session)
-  return message
-}
-
-const saveTokenToSession = session => message => {
-  session.token = token(message)
-}
+const broadcast = path(['broadcast'])
 
 const signToken = message => {
   const signed = jwt.sign(token(message), 'secret')
@@ -58,17 +50,14 @@ const fakePostalMessage = data => {
 }
 
 const broadcastSink = getSink({targets: ['actions'], logTag: logName})
-const broadcast = message => {
-  if (message.broadcast) {
-    const token = jwt.sign(message.token, 'secret')
-    setTimeout(() => {
-      broadcastSink({
-        action: 'broadcast',
-        token,
-        actionToken: message.actionToken,
-      })
-    }, 0)
-  }
+const broadcastAction = message => {
+  setTimeout(() => {
+    broadcastSink({
+      action: 'broadcast',
+      token: jwt.sign(message.token, 'secret'),
+      actionToken: message.actionToken,
+    })
+  }, 0)
 }
 
 let msgID = 1001
@@ -96,11 +85,11 @@ export default topics => {
         ::map(path(['data']))
         ::filter(pipe(path(['init']), equals('server'), not))
         ::filter(message => sessionID(session) !== broadcasterID(message))
-        ::map(when(broadcasterID, restoreToken(session)))
+        ::map(when(broadcasterID, message => ({...message, token: token(session)})))
         ::filter(message => sessionID(session) === tokenID(message) || broadcasterID(message))
         ::map(state)
         ::filter(pipe(isNil, not))
-        ::_do(saveTokenToSession(session))
+        ::_do(message => { session.token = token(message) })
         ::_do(pipe(
           pickAll(['error', 'token', 'actionToken', 'view', 'stuff']),
           signToken,
@@ -110,7 +99,7 @@ export default topics => {
             ::socketStream.write,
           )),
         ))
-        ::_do(broadcast)
+        ::_do(when(broadcast, broadcastAction))
         ::_catch(error => { console.error('bus2sse error', logName, error) })
         .subscribe()
 
