@@ -135,6 +135,5 @@ export default (input) => {
       arg,
     })
 
-  const {view, ...args} = input
-  return views[view]({...args, signal})
+  return views[input.view]({...input, signal})
 }
