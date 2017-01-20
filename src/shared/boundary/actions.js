@@ -62,7 +62,7 @@ export const actions = {
     return {broadcasterID: streamID}
   },
   incrementField ({arg}) {
-    return {mutation: 'increment', amount: arg}
+    return {mutation: 'increment', amount: arg || 1}
   },
   userSession ({arg}) {
     return {mutation: 'userSession', userName: arg || null}
