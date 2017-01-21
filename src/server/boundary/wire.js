@@ -3,27 +3,22 @@ import {logConsole} from '../../shared/boundary/logger'
 import Koa from 'koa'
 import convert from 'koa-convert'
 
+import mount from 'koa-mount'
 import prettyJSON from 'koa-json'
 import errorHandler from './request-error-handler'
 import responseLogger from './response-logger'
-
-import mount from 'koa-mount'
-
 import session from 'koa-session'
+
 import serveFiles from './routes/serve-files'
-
-import * as test from './routes/test'
-
-import busToSse from './bus-adapters/bus-to-sse-adapter'
-import httpToBus from './bus-adapters/http-to-bus-adapter'
+import busToSse from './routes/bus-to-sse-adapter'
+import httpToBus from './routes/http-to-bus-adapter'
+import renderStringOptions, {renderString} from './routes/render-string'
 
 import createServer from './server'
-
 import {connect} from '../../shared/boundary/connect-postal'
-import actionOptions from '../../shared/boundary/actions'
-import modelOptions from '../../shared/control/model'
 import stateOptions from '../../shared/control/state'
-import renderStringOptions, {renderString} from './routes/render-string'
+import modelOptions from '../../shared/control/model'
+import actionOptions from '../../shared/boundary/actions'
 
 const logName = 'wire-server'
 const log = logConsole(logName)
@@ -37,14 +32,10 @@ function createApp () {
 
   app.use(mount('/public', serveFiles('/public')))
 
-  Object.keys(test).forEach(key => {
-    app.use(mount(`/test/${key}`, test[key]))
-  })
-
   app.keys = ['secret']
   app.use(convert(session({
     key: 'tbo:sess',
-    maxAge: 1000 * 60 * 1,
+    maxAge: 1000 * 60 * 2,
   }, app)))
 
   app.use(mount('/sse', busToSse(['state'])))
@@ -55,10 +46,9 @@ function createApp () {
 }
 
 createServer(createApp().callback(), () => {
-  log('Server ready.')
-
   connect(renderStringOptions)
   connect(stateOptions)
   connect(modelOptions)
   connect(actionOptions)
+  log('Server ready.')
 })

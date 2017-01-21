@@ -74,7 +74,7 @@ export async function renderString (ctx) {
   const token = createToken({data: {streamID}})
   const actionToken = createToken({id: initActionID})
 
-  let sub = index
+  let sub = index // TODO just take value
     ::_catch(error => {
       log(error)
       ctx.status = 500

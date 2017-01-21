@@ -16,7 +16,7 @@ export default function createServer (app, callback) {
   const host = process.env.HOST || 'localhost'
   server.listen(port, host, () => {
     port = server.address().port
-    log(`Koa listening on https://${host}:${port}`)
+    log(`HTTPS listening on https://${host}:${port}`)
     callback()
   })
 }
