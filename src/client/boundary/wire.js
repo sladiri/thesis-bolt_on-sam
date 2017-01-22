@@ -1,7 +1,7 @@
 import {connect} from '../../shared/boundary/connect-postal'
 import renderOptions from './render-dom'
-import sseToBus from './bus-adapters/sse-to-bus-adapter'
-import busToHttp from './bus-adapters/bus-to-http-adapter'
+import sseToBus from './sse-to-bus-adapter'
+import busToHttp from './bus-to-http-adapter'
 
 connect(renderOptions)
 

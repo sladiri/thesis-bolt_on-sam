@@ -1,5 +1,5 @@
-import {logConsole} from '../../../shared/boundary/logger'
-import {toBusAdapter} from '../../../shared/boundary/connect-postal'
+import {logConsole} from '../../shared/boundary/logger'
+import {toBusAdapter} from '../../shared/boundary/connect-postal'
 import {pipe, when, prop, not, tap, path} from 'ramda'
 
 const logName = 'sse-to-bus-adapter'

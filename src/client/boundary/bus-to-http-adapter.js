@@ -1,5 +1,5 @@
-import {logConsole} from '../../../shared/boundary/logger'
-import {getSource} from '../../../shared/boundary/connect-postal'
+import {logConsole} from '../../shared/boundary/logger'
+import {getSource} from '../../shared/boundary/connect-postal'
 import {map} from 'rxjs/operator/map'
 import {_catch} from 'rxjs/operator/catch'
 import {_do} from 'rxjs/operator/do'
