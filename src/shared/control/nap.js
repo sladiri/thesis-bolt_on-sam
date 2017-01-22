@@ -7,32 +7,28 @@ const logName = 'nap-function'
 const log = logConsole(logName)
 
 const actionSink = getSink({targets: ['actions'], logTag: logName})
-const createToken = payload => jwt.sign(payload, 'secret', {expiresIn: '10s'})
+const actionToken = () => jwt.sign({id: uuid()}, 'secret', {expiresIn: '10s'})
+const token = input => jwt.sign(input.token, 'secret')
 
 export default function nap (input) {
-  const actionToken = createToken({id: uuid()})
-  const token = jwt.sign({data: input.token.data}, 'secret')
-
   if (input.mutation === 'firstStart' || input.mutation === 'tick') {
-    log('tick')
     setTimeout(() => {
       actionSink({
         action: 'tick',
-        actionToken,
-        token,
+        actionToken: actionToken(),
+        token: token(input),
       })
-    }, 5000)
+    }, 1000)
   }
 
-  if (input.init === 'server' || input.mutation === 'tock') {
-    log('tock')
+  if (input.mutation === 'tock' || input.init === 'client' && !input.token.data.cached) {
     setTimeout(() => {
       actionSink({
         action: 'tock',
-        actionToken,
-        token: input.init === 'server' ? token : jwt.sign(input.token, 'secret'),
+        actionToken: actionToken(),
+        token: token(input),
       })
-    }, 2000)
+    }, 666)
   }
 
   if (['increment', 'postMessage'].includes(input.mutation)) {
@@ -40,8 +36,8 @@ export default function nap (input) {
     setTimeout(() => {
       actionSink({
         action: 'broadcast',
-        token: jwt.sign(input.token, 'secret'),
-        actionToken,
+        actionToken: actionToken(),
+        token: token(input),
       })
     }, 0)
   }

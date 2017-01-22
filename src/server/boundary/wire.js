@@ -18,7 +18,7 @@ import createServer from './server'
 import {connect} from '../../shared/boundary/connect-postal'
 import stateOptions from '../../shared/control/state'
 import modelOptions from '../../shared/control/model'
-import actionOptions from '../../shared/boundary/actions'
+import actionOptions from './actions'
 
 const logName = 'wire-server'
 const log = logConsole(logName)

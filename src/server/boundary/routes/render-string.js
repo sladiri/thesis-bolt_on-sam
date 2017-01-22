@@ -120,8 +120,8 @@ export default {
   handler: onStateRepresentation,
 }
 
-const token = createToken({data: {streamID: null, allowedActions: ['firstStart']}})
+const token = createToken({data: {streamID: uuid(), allowedActions: ['firstStart']}})
 const actionToken = createToken({id: uuid()})
 setTimeout(() => {
   actionSink({action: 'firstStart', actionToken, token})
-}, 1000)
+}, 2000)

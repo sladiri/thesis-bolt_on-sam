@@ -86,9 +86,9 @@ export function onPropose (input) {
 
   if (!(input.init === 'server' || input.init === 'client' || input.broadcasterID)) {
     abort = mutations[input.mutation](input) === false
+  } else if (input.init === 'client') {
+    input.token.data.tock = input.token.data.tock || Math.round(Math.random() * 1000 + 500)
   }
-  input.token.data.init = false
-  input.token.data.tock = input.token.data.tock || 123
 
   return abort
     ? undefined
