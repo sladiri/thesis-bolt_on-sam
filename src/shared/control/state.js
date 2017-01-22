@@ -46,6 +46,7 @@ export function state (input) {
 
   stuff.streamID = data.streamID || 'no streamID'
   stuff.userName = data.userName
+  stuff.tock = data.tock
   stuff.group = model.groups.filter(group => group.members.indexOf(data.userName) >= 0).map(prop('name')).join(', ')
   stuff.groupPosts = (model.groups.find(group => group.members.includes(data.userName)) || {}).posts || []
   stuff.isAdmin = data.isAdmin

@@ -52,6 +52,7 @@ const fields = (stuff, signal) =>
   h('div.fields', {style: styles.ellipsis}, [
     h('h2', 'Fields'),
     h('span', 'streamID: '), h('span', stuff.streamID), h('br'),
+    h('span', 'tock: '), h('span', stuff.tock), h('br'),
     h('span', `field: ${stuff.field} - `), incrementButton(stuff, signal), h('br'),
   ])
 

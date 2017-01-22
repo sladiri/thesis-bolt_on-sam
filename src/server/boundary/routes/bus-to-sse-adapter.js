@@ -1,8 +1,8 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import validateAndLog from '../../../shared/boundary/json-schema'
 import {PassThrough} from 'stream'
-import {pipe, assocPath, path, when, isNil, not, equals, pickAll} from 'ramda'
-import {getSource, busChannel, getSink} from '../../../shared/boundary/connect-postal'
+import {pipe, assocPath, path, when, not, equals, pickAll} from 'ramda'
+import {getSource, busChannel} from '../../../shared/boundary/connect-postal'
 import jwt from 'jsonwebtoken'
 import {state} from '../../../shared/control/state'
 import {map} from 'rxjs/operator/map'
@@ -48,21 +48,7 @@ const fakePostalMessage = data => {
   }
 }
 
-const isBroadcast = ({mutation}) =>
-  [
-    'increment',
-    'postMessage',
-  ].includes(mutation)
-const actionSink = getSink({targets: ['actions'], logTag: logName})
-const broadcastAction = message => {
-  setTimeout(() => {
-    actionSink({
-      action: 'broadcast',
-      token: jwt.sign(message.token, 'secret'),
-      actionToken: message.actionToken,
-    })
-  }, 0)
-}
+const isBroadcast = message => broadcasterID(message) || broadcasterID(message) === null
 
 let msgID = 1001
 export default topics => {
@@ -89,8 +75,8 @@ export default topics => {
         ::map(path(['data']))
         ::filter(pipe(path(['init']), equals('server'), not))
         ::filter(message => sessionID(session) !== broadcasterID(message))
-        ::map(when(broadcasterID, message => ({...message, token: token(session)})))
-        ::filter(message => sessionID(session) === tokenID(message) || broadcasterID(message))
+        ::map(when(isBroadcast, message => ({...message, token: token(session)})))
+        ::filter(message => sessionID(session) === tokenID(message) || isBroadcast(message))
         ::map(state)
         ::_do(message => { session.token = token(message) })
         ::_do(pipe(
@@ -102,7 +88,6 @@ export default topics => {
             ::socketStream.write,
           )),
         ))
-        ::_do(when(isBroadcast, broadcastAction))
         ::_catch(error => { console.error('bus2sse error', logName, error) })
         .subscribe()
 

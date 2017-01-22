@@ -11,9 +11,12 @@ export const validate = validateAndLog({
   properties: {
     action: {
       enum: [
+        'firstStart',
         'initServer',
         'initClient',
         'incrementField',
+        'tick',
+        'tock',
         'userSession',
         'broadcast',
         'groupMessage',
@@ -33,6 +36,9 @@ const checkAllowedActions = (action, token) => {
 }
 
 export const actions = {
+  firstStart () {
+    return {mutation: 'firstStart'}
+  },
   initServer () {
     return {init: 'server'}
   },
@@ -63,6 +69,12 @@ export const actions = {
   },
   incrementField ({arg}) {
     return {mutation: 'increment', amount: arg || 1}
+  },
+  tick () {
+    return {mutation: 'tick', broadcasterID: null}
+  },
+  tock () {
+    return {mutation: 'tock'}
   },
   userSession ({arg}) {
     return {mutation: 'userSession', userName: arg || null}

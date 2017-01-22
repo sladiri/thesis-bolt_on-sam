@@ -28,10 +28,18 @@ const mapDB = db =>
   })
 
 const mutations = {
+  firstStart () {
+  },
   increment ({amount}) {
     if (!amount) { return false }
 
     db.field += amount
+  },
+  tick () {
+    mutations.increment({amount: 1})
+  },
+  tock ({token}) {
+    token.data.tock += 1
   },
   userSession ({userName, token}) {
     if (!(userName === null || db.users.includes(userName))) {
@@ -40,6 +48,7 @@ const mutations = {
 
     token.data.userName = userName
     token.data.isAdmin = db.groups.find(group => group.name === 'admin').members.includes(userName)
+    token.data.tock = 666
   },
   postMessage ({group: groupName, message, token}) {
     let group
@@ -78,6 +87,8 @@ export function onPropose (input) {
   if (!(input.init === 'server' || input.init === 'client' || input.broadcasterID)) {
     abort = mutations[input.mutation](input) === false
   }
+  input.token.data.init = false
+  input.token.data.tock = input.token.data.tock || 123
 
   return abort
     ? undefined
