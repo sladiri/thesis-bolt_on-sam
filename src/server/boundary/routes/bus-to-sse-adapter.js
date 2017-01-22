@@ -1,7 +1,7 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import validateAndLog from '../../../shared/boundary/json-schema'
 import {PassThrough} from 'stream'
-import {pipe, assocPath, path, when, not, equals, pickAll} from 'ramda'
+import {pipe, assocPath, path, when, not, equals, pickAll, merge} from 'ramda'
 import {getSource, busChannel} from '../../../shared/boundary/connect-postal'
 import jwt from 'jsonwebtoken'
 import {state} from '../../../shared/control/state'
@@ -48,7 +48,15 @@ const fakePostalMessage = data => {
   }
 }
 
-const isBroadcast = message => broadcasterID(message) || broadcasterID(message) === null
+const isBroadcast = message =>
+  broadcasterID(message) ||
+  broadcasterID(message) === null
+
+const restoreDirectedBroadcastSession = session => message => {
+  session.token.data = assocPath(message.path, path(message.path, message.token.data), session.token.data)
+  message.token.data = merge(message.token.data, session.token.data)
+  return message
+}
 
 let msgID = 1001
 export default topics => {
@@ -76,8 +84,12 @@ export default topics => {
         ::filter(pipe(path(['init']), equals('server'), not))
         ::filter(message => !(isBroadcast(message) && !token(session)))
         ::filter(message => sessionID(session) !== broadcasterID(message))
+        ::filter(message => message.directedBroadcast !== true || (message.directedBroadcast === true && session.streamID === message.token.data.streamID))
+        ::map(when(
+          message => !(message.directedBroadcast !== true || session.streamID !== message.token.data.streamID || !session.token),
+          restoreDirectedBroadcastSession(session)))
         ::map(when(isBroadcast, message => ({...message, token: token(session)})))
-        ::filter(message => sessionID(session) === tokenID(message) || isBroadcast(message))
+        ::filter(message => sessionID(session) === tokenID(message) || isBroadcast(message) || message.directedBroadcast === true)
         ::map(state)
         ::_do(message => { session.token = token(message) })
         ::_do(pipe(

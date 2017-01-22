@@ -40,6 +40,7 @@ const mutations = {
   },
   tock ({token}) {
     token.data.tock += 1
+    return {path: ['tock']}
   },
   userSession ({userName, token}) {
     if (!(userName === null || db.users.includes(userName))) {
@@ -48,7 +49,6 @@ const mutations = {
 
     token.data.userName = userName
     token.data.isAdmin = db.groups.find(group => group.name === 'admin').members.includes(userName)
-    token.data.tock = 666
   },
   postMessage ({group: groupName, message, token}) {
     let group
@@ -82,17 +82,17 @@ const mutations = {
 export function onPropose (input) {
   if (input.error) { return input }
 
-  let abort
+  let hint
 
   if (!(input.init === 'server' || input.init === 'client' || input.broadcasterID)) {
-    abort = mutations[input.mutation](input) === false
+    hint = mutations[input.mutation](input)
   } else if (input.init === 'client') {
     input.token.data.tock = input.token.data.tock || Math.round(Math.random() * 1000 + 500)
   }
 
-  return abort
+  return hint === false
     ? undefined
-    : {...input, ...mapDB(db)}
+    : {...input, ...hint, ...mapDB(db)}
 }
 
 export default {

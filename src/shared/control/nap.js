@@ -24,6 +24,7 @@ export default function nap (input) {
   if (input.mutation === 'tock' || input.init === 'client' && !input.token.data.cached) {
     setTimeout(() => {
       actionSink({
+        directedBroadcast: true,
         action: 'tock',
         actionToken: actionToken(),
         token: token(input),

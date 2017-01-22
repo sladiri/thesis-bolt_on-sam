@@ -92,6 +92,7 @@ export function onAction (input) {
     }
 
     const actionResult = {
+      directedBroadcast: input.directedBroadcast,
       token: input.token,
       actionToken: input.actionToken,
       ...(actions[action](input) || {}),
