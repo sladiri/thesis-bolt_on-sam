@@ -97,7 +97,7 @@ export async function renderString (ctx) {
 export function onStateRepresentation (input) {
   try {
     when(
-      input => isNil(input.broadcasterID) || !input.directedBroadcast,
+      input => isNil(input.broadcasterID),
       pipe(
         tap(nap),
         tap(saveInput),
