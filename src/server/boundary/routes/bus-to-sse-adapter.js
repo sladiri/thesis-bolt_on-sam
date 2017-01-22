@@ -52,6 +52,7 @@ const isBroadcast = message =>
   broadcasterID(message) ||
   broadcasterID(message) === null
 
+const isDirectBroadcast = message => message.directedBroadcast === true
 const restoreDirectedBroadcastSession = session => message => {
   session.token.data = assocPath(message.path, path(message.path, message.token.data), session.token.data)
   message.token.data = merge(message.token.data, session.token.data)
@@ -84,12 +85,12 @@ export default topics => {
         ::filter(pipe(path(['init']), equals('server'), not))
         ::filter(message => !(isBroadcast(message) && !token(session)))
         ::filter(message => sessionID(session) !== broadcasterID(message))
-        ::filter(message => message.directedBroadcast !== true || (message.directedBroadcast === true && session.streamID === message.token.data.streamID))
+        ::filter(message => !isDirectBroadcast(message) || (isDirectBroadcast(message) && sessionID(session) === tokenID(message)))
         ::map(when(
-          message => !(message.directedBroadcast !== true || session.streamID !== message.token.data.streamID || !session.token),
+          message => !(!isDirectBroadcast(message) || sessionID(session) !== tokenID(message) || !token(session)),
           restoreDirectedBroadcastSession(session)))
         ::map(when(isBroadcast, message => ({...message, token: token(session)})))
-        ::filter(message => sessionID(session) === tokenID(message) || isBroadcast(message) || message.directedBroadcast === true)
+        ::filter(message => sessionID(session) === tokenID(message) || isBroadcast(message) || isDirectBroadcast(message))
         ::map(state)
         ::_do(message => { session.token = token(message) })
         ::_do(pipe(
