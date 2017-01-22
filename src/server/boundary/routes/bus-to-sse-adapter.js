@@ -74,6 +74,7 @@ export default topics => {
         ::map(assocPath(['data', 'msgID'], msgID++))
         ::map(path(['data']))
         ::filter(pipe(path(['init']), equals('server'), not))
+        ::filter(message => !(isBroadcast(message) && !token(session)))
         ::filter(message => sessionID(session) !== broadcasterID(message))
         ::map(when(isBroadcast, message => ({...message, token: token(session)})))
         ::filter(message => sessionID(session) === tokenID(message) || isBroadcast(message))
