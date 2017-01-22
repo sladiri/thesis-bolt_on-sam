@@ -29,14 +29,13 @@ const mapDB = db =>
 
 const mutations = {
   increment ({amount}) {
-    if (!amount) { return {noOp: true} }
+    if (!amount) { return false }
 
     db.field += amount
-    return {broadcast: true}
   },
   userSession ({userName, token}) {
     if (!(userName === null || db.users.includes(userName))) {
-      return {noOp: true}
+      return false
     }
 
     token.data.userName = userName
@@ -45,11 +44,10 @@ const mutations = {
   postMessage ({group: groupName, message, token}) {
     let group
     if (!(group = db.groups.find(group => group.name === groupName))) {
-      return {noOp: true}
+      return false
     }
 
     group.posts.push(message)
-    return {broadcast: true}
   },
   toggleGroup ({group: groupName, user: userName, token}) {
     let group
@@ -58,7 +56,7 @@ const mutations = {
       !(group = db.groups.find(group => group.name === groupName)) ||
       !db.users.includes(userName)
     ) {
-      return {noOp: true}
+      return false
     }
     const memberIndex = group.members.indexOf(userName)
     if (memberIndex >= 0) {
@@ -66,7 +64,6 @@ const mutations = {
     } else {
       group.members.push(userName)
     }
-    // return {broadcast: true}
   },
 }
 
@@ -76,13 +73,15 @@ const mutations = {
 export function onPropose (input) {
   if (input.error) { return input }
 
-  if (input.init === 'server' || input.init === 'client' || input.broadcasterID) {
-    return {...input, ...mapDB(db)}
+  let abort
+
+  if (!(input.init === 'server' || input.init === 'client' || input.broadcasterID)) {
+    abort = mutations[input.mutation](input) === false
   }
 
-  const options = mutations[input.mutation](input) || {}
-
-  return {...input, ...options, ...mapDB(db)}
+  return abort
+    ? undefined
+    : {...input, ...mapDB(db)}
 }
 
 export default {

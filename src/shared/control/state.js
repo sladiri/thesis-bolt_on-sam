@@ -33,8 +33,6 @@ export function state (input) {
     }
   }
 
-  if (input.noOp) { return }
-
   const {model, ...options} = input
   const {token: {data}} = input
 

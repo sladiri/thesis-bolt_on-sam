@@ -30,7 +30,6 @@ const sessionID = path(['streamID'])
 const token = path(['token'])
 const tokenID = pipe(token, path(['data', 'streamID']))
 const broadcasterID = path(['broadcasterID'])
-const broadcast = path(['broadcast'])
 
 const signToken = message => {
   const signed = jwt.sign(token(message), 'secret')
@@ -49,10 +48,15 @@ const fakePostalMessage = data => {
   }
 }
 
-const broadcastSink = getSink({targets: ['actions'], logTag: logName})
+const isBroadcast = ({mutation}) =>
+  [
+    'increment',
+    'postMessage',
+  ].includes(mutation)
+const actionSink = getSink({targets: ['actions'], logTag: logName})
 const broadcastAction = message => {
   setTimeout(() => {
-    broadcastSink({
+    actionSink({
       action: 'broadcast',
       token: jwt.sign(message.token, 'secret'),
       actionToken: message.actionToken,
@@ -88,7 +92,6 @@ export default topics => {
         ::map(when(broadcasterID, message => ({...message, token: token(session)})))
         ::filter(message => sessionID(session) === tokenID(message) || broadcasterID(message))
         ::map(state)
-        ::filter(pipe(isNil, not))
         ::_do(message => { session.token = token(message) })
         ::_do(pipe(
           pickAll(['error', 'token', 'actionToken', 'view', 'stuff']),
@@ -99,7 +102,7 @@ export default topics => {
             ::socketStream.write,
           )),
         ))
-        ::_do(when(broadcast, broadcastAction))
+        ::_do(when(isBroadcast, broadcastAction))
         ::_catch(error => { console.error('bus2sse error', logName, error) })
         .subscribe()
 
