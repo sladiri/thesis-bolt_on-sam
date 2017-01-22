@@ -1,10 +1,11 @@
 import {logConsole} from '../../../shared/boundary/logger'
 import {renderToString} from 'inferno-server'
-import {pipe, path} from 'ramda'
+import {pipe, path, tap} from 'ramda'
 import stateRepresentation, {validate} from '../../../shared/boundary/state-representation'
 import {getSink} from '../../../shared/boundary/connect-postal'
 import {BehaviorSubject} from 'rxjs/BehaviorSubject'
 import {_catch} from 'rxjs/operator/catch'
+import {first} from 'rxjs/operator/first'
 import {skip} from 'rxjs/operator/skip'
 import jwt from 'jsonwebtoken'
 import uuid from 'uuid/v4'
@@ -74,13 +75,12 @@ export async function renderString (ctx) {
   const token = createToken({data: {streamID}})
   const actionToken = createToken({id: initActionID})
 
-  let sub = index // TODO just take value
+  index
+    ::first()
     ::_catch(error => {
       log(error)
       ctx.status = 500
       ctx.body = {message: error.message}
-      sub.unsubscribe()
-      sub = undefined
     })
     .subscribe(view => {
       ctx.session.failedCache = true
@@ -88,8 +88,6 @@ export async function renderString (ctx) {
       ctx.session.actionToken = actionToken
       ctx.session.streamID = streamID
       ctx.body = view
-      sub.unsubscribe()
-      sub = undefined
     })
 
   actionSink({action: 'initServer', token, actionToken})
@@ -99,9 +97,8 @@ export function onStateRepresentation (input) {
   try {
     if (input.broadcasterID) { return }
 
-    saveInput(input)
-
     pipe(
+      tap(saveInput),
       stateRepresentation,
       renderToString,
       markup,
@@ -111,7 +108,7 @@ export function onStateRepresentation (input) {
     index.error(error)
   }
 
-  log('rendered')
+  console.log('rendered')
 }
 
 export default {
