@@ -34,25 +34,26 @@ export function state (input) {
   }
 
   const {model, ...options} = input
-  const {token: {data}} = input
+  const {token: {data: tokenData}} = input
 
-  const allowedActions = Object.keys(actions)
-  data.allowedActions = allowedActions
+  tokenData.allowedActions = Object.keys(actions)
 
-  const stuff = {}
+  const stuff = {
+    ticker: model.ticker,
+  }
 
-  stuff.field = model.field
-  stuff.groups = map(prop('name'), model.groups)
+  // stuff.field = model.field
+  // stuff.groups = map(prop('name'), model.groups)
 
-  stuff.streamID = data.streamID || 'no streamID'
-  stuff.userName = data.userName
-  stuff.tock = data.tock
-  stuff.group = model.groups.filter(group => group.members.indexOf(data.userName) >= 0).map(prop('name')).join(', ')
-  stuff.groupPosts = (model.groups.find(group => group.members.includes(data.userName)) || {}).posts || []
-  stuff.isAdmin = data.isAdmin
-  stuff.users = stuff.isAdmin && model.users
+  // stuff.streamID = tokenData.streamID || 'no streamID'
+  // stuff.userName = tokenData.userName
+  // stuff.tock = tokenData.tock
+  // stuff.group = model.groups.filter(group => group.members.indexOf(tokenData.userName) >= 0).map(prop('name')).join(', ')
+  // stuff.groupPosts = (model.groups.find(group => group.members.includes(tokenData.userName)) || {}).posts || []
+  // stuff.isAdmin = tokenData.isAdmin
+  // stuff.users = stuff.isAdmin && model.users
 
-  const view = data.userName ? 'loggedIn' : 'initial'
+  const view = tokenData.userName ? 'loggedIn' : 'initial'
 
   return {...options, view, stuff}
 }

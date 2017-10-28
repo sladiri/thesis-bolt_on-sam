@@ -8,6 +8,11 @@ const logName = 'http-to-bus-adapter'
 const log = logConsole(logName)
 const userErrorLog = logConsole(logName, 'user-error')
 
+// setTimeout(() => {
+//   postal.publish({channel: 't_bo-sam', topic: 'actions', data: {action: 'fucker'}})
+// }, 2000)
+
+
 export default async function httpToBusAdapter (ctx) {
   const {req} = ctx
 
@@ -45,21 +50,26 @@ export default async function httpToBusAdapter (ctx) {
     return
   }
 
-  const serverInitToken = ctx.session.serverInitToken
-  const actionToken = ctx.session.actionToken
-  const failedCache = ctx.session.failedCache
-  if (serverInitToken) {
-    delete ctx.session.serverInitToken
-    delete ctx.session.actionToken
-    delete ctx.session.failedCache
-    data = assocPath(['data', 'token'], serverInitToken, data)
-    data = assocPath(['data', 'actionToken'], actionToken, data)
-    data = assocPath(['data', 'failedCache'], failedCache, data)
+  // console.log('http', ctx.session)
+  // const serverInitToken = ctx.session.serverInitToken
+  // const failedCache = ctx.session.failedCache
+  // if (serverInitToken) {
+  //   delete ctx.session.serverInitToken
+  //   delete ctx.session.failedCache
+  //   data = assocPath(['data', 'token'], serverInitToken, data)
+  //   data = assocPath(['data', 'failedCache'], failedCache, data)
+  // }
+
+  try {
+    log('got action request body')
+
+    data = assocPath(['data', 'data', 'cookie'], ctx.get('cookie'), data)
+    data = assocPath(['envelope', 'data', 'cookie'], ctx.get('cookie'), data)
+    data = assocPath(['envelope', 'topic'], 'actions', data)
+    toBusAdapter({sinks: {}, logTag: logName})(data)
+  } catch (e) {
+    console.log(e)
+    debugger
   }
-
-  log('got action request body')
-
-  toBusAdapter({sinks: {}, logTag: logName})(data)
-
   ctx.status = 200
 }

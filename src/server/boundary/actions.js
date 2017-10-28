@@ -8,23 +8,22 @@ const logName = 'actions'
 const log = logConsole(logName)
 
 export const validate = validateAndLog({
-  required: ['token', 'action'],
-  properties: {
-    action: {
-      enum: [
-        'firstStart',
-        'initServer',
-        'initClient',
-        'incrementField',
-        'tick',
-        'tock',
-        'userSession',
-        'broadcast',
-        'groupMessage',
-        'toggleGroup',
-      ],
-    },
-  },
+  // required: ['token', 'action'],
+  // properties: {
+  //   action: {
+  //     enum: [
+  //       'initServer',
+  //       'initClient',
+  //       'incrementField',
+  //       'tick',
+  //       'tock',
+  //       'userSession',
+  //       'broadcast',
+  //       'groupMessage',
+  //       'toggleGroup',
+  //     ],
+  //   },
+  // },
 }, log)
 
 const checkAllowedActions = (action, token) => {
@@ -37,11 +36,6 @@ const checkAllowedActions = (action, token) => {
 }
 
 export const actions = {
-  firstStart ({token}) {
-    const initToken = jwt.verify(token, 'secret')
-    const streamID = initToken.data.streamID
-    return {mutation: 'firstStart', token: jwt.sign({data: {streamID}}, 'secret')}
-  },
   initServer ({token}) {
     return {init: 'server'}
   },
@@ -78,13 +72,11 @@ export const actions = {
  * - Calls external API (eg. validation service)
 */
 export function onAction (input) {
+  console.log('ac\n', input)
   try {
     const {action} = input
 
-    jwt.verify(input.actionToken, 'secret') // TODO blcaklist used tokens
-    input.actionToken = jwt.sign({id: uuid()}, 'secret', {expiresIn: '1y'})
-
-    console.log('Action intent', action, input.nap)
+    log('Action intent', action)
 
     if (checkAllowedActions(action, input.token) === false) {
       log('Forbidden client action', action, input.token.allowedActions)
@@ -94,7 +86,6 @@ export function onAction (input) {
     const actionResult = {
       directedBroadcast: input.directedBroadcast,
       token: input.token,
-      actionToken: input.actionToken,
       ...(actions[action](input) || {}),
     }
     actionResult.token = jwt.verify(actionResult.token, 'secret')

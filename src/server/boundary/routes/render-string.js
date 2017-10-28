@@ -5,11 +5,11 @@ import stateRepresentation, {validate} from '../../../shared/boundary/state-repr
 import {getSink} from '../../../shared/boundary/connect-postal'
 import {BehaviorSubject} from 'rxjs/BehaviorSubject'
 import {_catch} from 'rxjs/operator/catch'
+import {_do} from 'rxjs/operator/do'
 import {first} from 'rxjs/operator/first'
 import {skip} from 'rxjs/operator/skip'
 import jwt from 'jsonwebtoken'
 import uuid from 'uuid/v4'
-import nap from '../../../shared/control/nap'
 
 const logName = 'render-index'
 const log = logConsole(logName)
@@ -19,7 +19,8 @@ const markup = html =>
 <!doctype html>
 <html lang=en>
 <head>
-  <meta charset=utf-8><title>Bolt On - SAM!</title>
+  <meta charset=utf-8>
+  <title>Bolt On - SAM!</title>
   <link rel="icon" href="/public/favicon.ico" />
   <script src="/public/jspm_packages/system.js"></script>
   <script src="/public/jspm.config.js"></script>
@@ -36,76 +37,64 @@ let index = new BehaviorSubject(markup())::skip(1)
 const actionSink = getSink({targets: ['actions'], logTag: logName})
 
 const cache = {}
-const saveInput = input => {
-  const streamID = path(['token', 'data', 'streamID'], input)
-  log('Cache input data.', streamID)
-  if (streamID) {
-    cache[streamID] = input // TODO limit memory usage
-  }
-}
 
-const createToken = payload => jwt.sign(payload, 'secret', {expiresIn: '10s'})
+const createToken = payload => jwt.sign(payload, 'secret', {expiresIn: '100s'})
 
 export async function renderString (ctx) {
   // TODO store more in initToken than just streamID, to identify client
-  const oldID = ctx.session.streamID
-  const initActionID = uuid()
+  // const oldID = ctx.session.streamID
 
-  if (oldID && cache[oldID]) {
-    log('Restore input data', oldID)
-    try {
-      ctx.session.failedCache = false
-      ctx.session.serverInitToken = createToken({data: {streamID: oldID}})
-      ctx.session.actionToken = createToken({id: initActionID})
-      ctx.body = pipe(
-        stateRepresentation,
-        renderToString,
-        markup,
-      )(cache[oldID])
-    } catch (error) {
-      log(error)
-      ctx.status = 500
-      ctx.body = {message: error.message}
-    }
-    return
-  } else if (oldID && !cache[oldID]) {
-    log('Missing input data cache', oldID)
-  }
+  // if (oldID && cache[oldID]) {
+  //   log('Restore input data', oldID)
+  //   try {
+  //     ctx.session.failedCache = false
+  //     ctx.session.serverInitToken = createToken({data: {streamID: oldID}})
+  //     ctx.body = cache[oldID]
+  //   } catch (error) {
+  //     log(error)
+  //     ctx.status = 500
+  //     ctx.body = {message: error.message}
+  //   }
+  //   return
+  // } else if (oldID && !cache[oldID]) {
+  //   log('Missing input data cache', oldID)
+  // }
 
-  const streamID = uuid()
-  const token = createToken({data: {streamID}})
-  const actionToken = createToken({id: initActionID})
+  const token = createToken({
+    data: {
+      streamID: uuid(),
+      failedCache: true,
+    },
+  })
 
   index
     ::first()
+    ::_do(view => {
+      ctx.set('set-cookie', token)
+      ctx.body = view
+    })
     ::_catch(error => {
       log(error)
       ctx.status = 500
       ctx.body = {message: error.message}
     })
-    .subscribe(view => {
-      ctx.session.failedCache = true
-      ctx.session.serverInitToken = token
-      ctx.session.actionToken = actionToken
-      ctx.session.streamID = streamID
-      ctx.body = view
-    })
+    .subscribe()
 
-  actionSink({action: 'initServer', token, actionToken})
+  actionSink({action: 'initServer', token})
 }
 
 export function onStateRepresentation (input) {
   try {
+    const streamID = path(['token', 'data', 'streamID'], input)
     when(
       input => isNil(input.broadcasterID),
       pipe(
-        tap(nap),
-        tap(saveInput),
         stateRepresentation,
         renderToString,
         markup,
+        tap(string => { cache[streamID] = string }),
         ::index.next,
-        tap(() => { log('rendered') })
+        tap(() => { log(`rendered and cached by streamID [${streamID}] - cache length [${Object.keys(cache).length}]`) })
       )
     )(input)
   } catch (error) {
@@ -120,8 +109,12 @@ export default {
   handler: onStateRepresentation,
 }
 
-const token = createToken({data: {streamID: uuid(), allowedActions: ['firstStart']}})
-const actionToken = createToken({id: uuid()})
-setTimeout(() => {
-  actionSink({action: 'firstStart', actionToken, token})
-}, 2000)
+// const tickerStreamID = uuid()
+// setInterval(() => {
+// // setTimeout(() => {
+//   console.log('tick')
+//   const token = createToken({data: {streamID: tickerStreamID, allowedActions: ['tick']}})
+//   // actionSink({action: 'tick', token})
+//   actionSink(({action: 'initClient', savedToken: null}))
+// // }, 1500)
+// }, 1000)

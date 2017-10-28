@@ -59,19 +59,27 @@ const restoreDirectedBroadcastSession = session => message => {
   return message
 }
 
+const broadcast = message => {}
+
+let sessions = 0
+
 let msgID = 1001
 export default topics => {
   return async function busToSseAdapter (ctx) {
     const session = {}
+    sessions += 1
+    console.log('a sessions active', sessions)
 
     try {
-      const {data: {streamID}} = jwt.verify(ctx.session.serverInitToken, 'secret')
-      delete ctx.session.serverInitToken
+      const {data: {streamID}} = jwt.verify(ctx.get('cookie'), 'secret')
+      ctx.set('set-cookie', 'hey')
+      // delete ctx.session.serverInitToken
       session.streamID = streamID
       log('SSE connect', streamID)
-    } catch ({message}) {
-      clientErrorLog(message)
+    } catch ({message, stack}) {
+      clientErrorLog(message, stack)
       ctx.status = 403
+      sessions -= 1
       return
     }
 
@@ -79,7 +87,11 @@ export default topics => {
       const socketStream = new PassThrough()
       const {postalSubs, source} = getSource({topics, logTag: logName})
 
+      // debugger
       const streamSub = source
+        ::_do(message => {
+          console.log('sessions active', sessions)
+        })
         ::map(assocPath(['data', 'msgID'], msgID++))
         ::map(path(['data']))
         ::filter(pipe(path(['init']), equals('server'), not))
@@ -94,7 +106,7 @@ export default topics => {
         ::map(state)
         ::_do(message => { session.token = token(message) })
         ::_do(pipe(
-          pickAll(['error', 'token', 'actionToken', 'view', 'stuff']),
+          pickAll(['error', 'token', 'view', 'stuff']),
           signToken,
           fakePostalMessage,
           when(validate, pipe(
@@ -122,6 +134,7 @@ export default topics => {
             socket.removeAllListeners('error')
             socket.on('error', () => { log('already socket closed') })
           }
+          // debugger
           clearInterval(keepalive)
           postalSubs.forEach(sub => { sub.unsubscribe() })
           streamSub.unsubscribe()

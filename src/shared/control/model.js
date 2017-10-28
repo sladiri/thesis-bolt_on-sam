@@ -10,6 +10,7 @@ export const validate = validateAndLog({
 const clone = obj => JSON.parse(JSON.stringify(obj))
 
 const db = {
+  ticker: 1,
   field: 42,
   groups: [
     {name: 'admin', members: ['anton', 'berta'], posts: []},
@@ -18,25 +19,14 @@ const db = {
   users: ['anton', 'berta', 'caesar', 'dora'],
 }
 
-const mapDB = db =>
-  ({
-    model: clone({
-      field: db.field,
-      groups: db.groups,
-      users: db.users,
-    }),
-  })
-
 const mutations = {
-  firstStart () {
+  tick () {
+    db.ticker += 1
   },
   increment ({amount}) {
     if (!amount) { return false }
 
     db.field += amount
-  },
-  tick () {
-    mutations.increment({amount: 1})
   },
   tock ({token}) {
     token.data.tock += 1
@@ -92,7 +82,7 @@ export function onPropose (input) {
 
   return hint === false
     ? undefined
-    : {...input, ...hint, ...mapDB(db)}
+    : {...input, ...hint, model: clone(db)}
 }
 
 export default {
@@ -100,5 +90,5 @@ export default {
   logTag: logName,
   validate,
   handler: onPropose,
-  targets: ['state'],
+  targets: ['state', 'nap'],
 }

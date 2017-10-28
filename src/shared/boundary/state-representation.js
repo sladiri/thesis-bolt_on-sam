@@ -42,7 +42,7 @@ const list = () =>
 
 const actionSink = getSink({targets: ['actions'], logTag: logName})
 
-const incrementButton = (stuff, signal, disabled) =>
+const incrementButton = (signal, disabled) =>
   h('button', {
     onclick () { signal('incrementField', 1) },
     disabled,
@@ -52,8 +52,9 @@ const fields = (stuff, signal) =>
   h('div.fields', {style: styles.ellipsis}, [
     h('h2', 'Fields'),
     h('span', 'streamID: '), h('span', stuff.streamID), h('br'),
+    h('span', 'ticker: '), h('span', stuff.ticker), h('br'),
     h('span', 'tock: '), h('span', stuff.tock), h('br'),
-    h('span', `field: ${stuff.field} - `), incrementButton(stuff, signal), h('br'),
+    h('span', `field: ${stuff.field} - `), incrementButton(signal), h('br'),
   ])
 
 const userActionButton = (stuff, signal, user) =>
@@ -131,10 +132,16 @@ export default (input) => {
   const signal = (action, arg) =>
     actionSink({
       token: input.token,
-      actionToken: input.actionToken,
       action,
       arg,
     })
+  // input.stuff = {
+  //   userName: null,
+  //   streamID: 'nope',
+  //   tock: 'no tock',
+  //   field: 'no field',
+  //   ticker: input.stuff ? input.stuff.ticker === null ? 'nuller' : input.stuff.ticker : -123,
+  // }
 
   return views[input.view]({...input, signal})
 }

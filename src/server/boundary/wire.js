@@ -1,13 +1,11 @@
 import {logConsole} from '../../shared/boundary/logger'
 
 import Koa from 'koa'
-import convert from 'koa-convert'
 
 import mount from 'koa-mount'
 import prettyJSON from 'koa-json'
 import errorHandler from './request-error-handler'
 import responseLogger from './response-logger'
-import session from 'koa-session'
 
 import serveFiles from './routes/serve-files'
 import busToSse from './routes/bus-to-sse-adapter'
@@ -16,6 +14,7 @@ import renderStringOptions, {renderString} from './routes/render-string'
 
 import createServer from './server'
 import {connect} from '../../shared/boundary/connect-postal'
+import napOptions from '../../shared/control/nap'
 import stateOptions from '../../shared/control/state'
 import modelOptions from '../../shared/control/model'
 import actionOptions from './actions'
@@ -32,12 +31,6 @@ function createApp () {
 
   app.use(mount('/public', serveFiles('/public')))
 
-  app.keys = ['secret']
-  app.use(convert(session({
-    key: 'tbo:sess',
-    maxAge: 1000 * 60 * 2,
-  }, app)))
-
   app.use(mount('/sse', busToSse(['state'])))
   app.use(mount('/actions', httpToBus))
   app.use(mount(renderString))
@@ -47,6 +40,7 @@ function createApp () {
 
 createServer(createApp().callback(), () => {
   connect(renderStringOptions)
+  // connect(napOptions)
   connect(stateOptions)
   connect(modelOptions)
   connect(actionOptions)
